@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MidFlow{% endblock %}</title>
+
+    <!-- CRITICAL: Load language IMMEDIATELY before anything else -->
+    <script>
+        // Get saved language from localStorage (before page renders)
+        const savedLang = localStorage.getItem('app_language') || 'en';
+        console.log('🌐 Loading app with language:', savedLang);
+
+        // Set HTML lang attribute
+        document.documentElement.lang = savedLang;
+
+        // Store it globally for i18n.js to use
+        window.initialLanguage = savedLang;
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+
+    <style>
+        /* Language Selector Styling */
+        .language-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #E5E7EB;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #374151;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .lang-btn:hover {
+            background: #F3F4F6;
+            border-color: #3B82F6;
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: var(--primary-blue, #3B82F6);
+            color: white;
+            border-color: var(--primary-blue, #3B82F6);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .lang-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* User Badge Styling */
+        .user-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% if current_user.is_authenticated %}
+    <!-- Top Header -->
+    <header class="header">
+        <div class="logo-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <!-- Clickable logo and title to return to dashboard -->
+            <a href="#" onclick="return loadPage('dashboard')"
+                style="display: flex; align-items: center; gap: 1rem; text-decoration: none; color: white; cursor: pointer;">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MidFlow Logo" class="logo">
+                <h1 class="app-title" data-i18n="app_title">MidFlow</h1>
+            </a>
+        </div>
+
+        <div class="user-info">
+            <!-- Language Selector Buttons -->
+            <div class="language-selector">
+                <button class="lang-btn" data-lang="en" title="English">
+                    🇬🇧 EN
+                </button>
+                <button class="lang-btn" data-lang="fr" title="Français">
+                    🇫🇷 FR
+                </button>
+                <button class="lang-btn" data-lang="es" title="Español">
+                    🇪🇸 ES
+                </button>
+            </div>
+
+            <!-- User Badge with Role -->
+            <div class="user-badge">
+                <span data-i18n="role_{{ current_user.role.lower() }}">{{ current_user.role.title() }}</span>:
+                <strong>{{ current_user.username }}</strong>
+            </div>
+
+            <!-- Logout Button -->
+            <a href="/logout" class="btn btn-secondary btn-sm">
+                <span data-i18n="logout">Logout</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <!-- Dashboard Link - FEATURED at top -->
+            <div class="nav-dashboard">
+                <a href="#" class="nav-dashboard-link active" onclick="return loadPage('dashboard')"
+                    data-page="dashboard">
+                    <span class="nav-icon">🏠</span>
+                    <span data-i18n="dashboard">Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Main Section -->
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span class="nav-icon">⚙️</span>
+                    <span data-i18n="menu_main">Main</span>
+                    <span class="nav-arrow">▼</span>
+                </div>
+                <div class="nav-section-content">
+                    <a href="#" class="nav-link" onclick="return loadPage('backup')">
+                        <span data-i18n="menu_backup">Backup</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('restore')">
+                        <span data-i18n="menu_restore">Restore</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('mission-details')">
+                        <span data-i18n="menu_mission_details">Mission Details</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('projects')">
+                        <span data-i18n="menu_projects">Project Management</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('end-users')">
+                        <span data-i18n="menu_end_users">End Users</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('third-parties')">
+                        <span data-i18n="menu_third_parties">Third Parties</span>
+                    </a>
+                    <!-- NEW: User Management -->
+                    <a href="#" class="nav-link" onclick="return loadPage('user-management')">
+                        <span data-i18n="menu_user_management">User Management</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span class="nav-icon">📋</span>
+                    <span data-i18n="menu_orders">Orders</span>
+                    <span class="nav-arrow">▼</span>
+                </div>
+                <div class="nav-section-content">
+                    <a href="#" class="nav-link" onclick="return loadPage('order-generation')">
+                        <span data-i18n="menu_order_generation">Order Generation</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('orders-followup')">
+                        <span data-i18n="menu_orders_followup">Orders Followup</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('order-details')">
+                        <span data-i18n="menu_order_details">Order Details</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('back-orders')">
+                        <span data-i18n="menu_back_orders">Back Orders</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cargo Section -->
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span class="nav-icon">📦</span>
+                    <span data-i18n="menu_cargo">Cargo</span>
+                    <span class="nav-arrow">▼</span>
+                </div>
+                <div class="nav-section-content">
+                    <a href="#" class="nav-link" onclick="return loadPage('cargo-reception')">
+                        <span data-i18n="menu_cargo_reception">Cargo Reception</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('cargo-followup')">
+                        <span data-i18n="menu_cargo_followup">Cargo Followup</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('upload-cargo')">
+                        <span data-i18n="menu_upload_cargo">Upload Cargo Details</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stock Movements Section -->
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span class="nav-icon">🔄</span>
+                    <span data-i18n="menu_stock_movements">Stock Movements</span>
+                    <span class="nav-arrow">▼</span>
+                </div>
+                <div class="nav-section-content">
+                    <a href="#" class="nav-link" onclick="return loadPage('dispatch-parcels')">
+                        <span data-i18n="menu_dispatch_parcels">Dispatch Parcels</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('dispatch-item')">
+                        <span data-i18n="menu_dispatch_item">Dispatch Item</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('receive-parcel')">
+                        <span data-i18n="menu_receive_parcel">Receive Parcel</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('receive-item')">
+                        <span data-i18n="menu_receive_item">Receive Item</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('parcel-followup')">
+                        <span data-i18n="menu_parcel_followup">Parcel/Item Followup</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tools Section -->
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span class="nav-icon">🛠️</span>
+                    <span data-i18n="menu_tools">Tools</span>
+                    <span class="nav-arrow">▼</span>
+                </div>
+                <div class="nav-section-content">
+                    <a href="#" class="nav-link" onclick="return loadPage('stock-availability')">
+                        <span data-i18n="menu_stock_availability">Stock Availability</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('stock-card')">
+                        <span data-i18n="menu_stock_card">Stock Card</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('parcel-tracing')">
+                        <span data-i18n="menu_parcel_tracing">Parcel Tracing</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('change-location')">
+                        <span data-i18n="menu_change_location">Change Parcel Location</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span class="nav-icon">📊</span>
+                    <span data-i18n="menu_reports">Reports</span>
+                    <span class="nav-arrow">▼</span>
+                </div>
+                <div class="nav-section-content">
+                    <a href="#" class="nav-link" onclick="return loadPage('donations')">
+                        <span data-i18n="menu_donations">Donations</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('losses')">
+                        <span data-i18n="menu_losses">Losses</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('sleeping-stock')">
+                        <span data-i18n="menu_sleeping_stock">Sleeping Stock</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('expiry-report')">
+                        <span data-i18n="menu_expiry_report">Expiry Report</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    {% endif %}
+
+    <!-- Core JavaScript -->
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

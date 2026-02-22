@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MidFlow - Login</title>
+
+    <!-- CRITICAL: Load language preference IMMEDIATELY -->
+    <script>
+        const savedLang = localStorage.getItem('app_language') || 'en';
+        document.documentElement.lang = savedLang;
+        window.initialLanguage = savedLang;
+        console.log('🌐 Login page loading with language:', savedLang);
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+
+    <style>
+        /* Language Selector Styling for Login */
+        .language-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            justify-content: center;
+        }
+
+        .lang-btn {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid #E5E7EB;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #374151;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .lang-btn:hover {
+            background: #F3F4F6;
+            border-color: #3B82F6;
+            transform: translateY(-2px);
+        }
+
+        .lang-btn.active {
+            background: var(--primary-blue, #3B82F6);
+            color: white;
+            border-color: var(--primary-blue, #3B82F6);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MidFlow Logo" class="login-logo">
+            <h2 class="login-title" data-i18n="app_title">MidFlow</h2>
+
+            <form method="POST" action="/login" id="login-form">
+                <div class="form-group">
+                    <label data-i18n="username">Username</label>
+                    <input type="text" name="username" id="username" required
+                        data-i18n-placeholder="username_placeholder" placeholder="Enter username" autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="password">Password</label>
+                    <input type="password" name="password" id="password" required
+                        data-i18n-placeholder="password_placeholder" placeholder="Enter password">
+                </div>
+
+                <!-- Hidden field to store selected language -->
+                <input type="hidden" name="language" id="language-field" value="en">
+
+                <div class="language-selector">
+                    <button type="button" class="lang-btn" data-lang="en" onclick="setLanguage('en')">
+                        🇬🇧 EN
+                    </button>
+                    <button type="button" class="lang-btn" data-lang="fr" onclick="setLanguage('fr')">
+                        🇫🇷 FR
+                    </button>
+                    <button type="button" class="lang-btn" data-lang="es" onclick="setLanguage('es')">
+                        🇪🇸 ES
+                    </button>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;" data-i18n="login">Login</button>
+            </form>
+
+            {% if error %}
+            <div class="badge badge-error" style="display: block; margin-top: 1rem; text-align: center;">
+                <span data-i18n="login_error">{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <div
+                style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #E5E7EB; color: #6B7280; font-size: 0.85rem; text-align: center;">
+                <p><strong data-i18n="default_credentials">Default Credentials:</strong></p>
+                <p style="margin-top: 0.5rem;">
+                    <span data-i18n="username">Username</span>:
+                    <code style="background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 3px;">admin</code>
+                </p>
+                <p>
+                    <span data-i18n="password">Password</span>:
+                    <code style="background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 3px;">admin123</code>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load i18n module -->
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+
+    <script>
+        // Language management for login page
+        let currentLanguage = window.initialLanguage || 'en';
+
+        function setLanguage(lang) {
+            console.log('🌐 Setting language to:', lang);
+            currentLanguage = lang;
+
+            // Update hidden form field
+            document.getElementById('language-field').value = lang;
+
+            // Save to localStorage immediately
+            localStorage.setItem('app_language', lang);
+
+            // Update active button styling
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Change language using i18n if available
+            if (typeof i18n !== 'undefined' && typeof i18n.setLanguage === 'function') {
+                i18n.setLanguage(lang);
+            } else if (typeof window.changeLanguage === 'function') {
+                window.changeLanguage(lang);
+            }
+
+            console.log('✅ Language set to:', lang);
+        }
+
+        // Initialize language on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('📄 DOM loaded, initializing language...');
+
+            // Get saved language
+            const savedLang = localStorage.getItem('app_language') || 'en';
+            console.log('📌 Saved language:', savedLang);
+
+            // Set the language
+            setLanguage(savedLang);
+
+            // Handle form submission
+            document.getElementById('login-form').addEventListener('submit', function (e) {
+                // Ensure language is saved before form submission
+                const lang = document.getElementById('language-field').value;
+                localStorage.setItem('app_language', lang);
+                console.log('💾 Form submitting with language:', lang);
+
+                // Form will submit normally
+            });
+
+            console.log('✅ Login page initialized');
+        });
+    </script>
+</body>
+
+</html>

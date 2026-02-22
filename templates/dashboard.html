@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Project Details Required Warning -->
+<div id="project-warning-banner" style="display: none; margin-bottom: 2rem;">
+    <div
+        style="background: linear-gradient(135deg, #FEE2E2, #FEF3C7); border: 3px solid #DC2626; border-radius: 12px; padding: 2rem; display: flex; align-items: center; gap: 1.5rem; box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2);">
+        <span style="font-size: 4rem;">⚠️</span>
+        <div style="flex: 1;">
+            <h3 style="color: #991B1B; font-size: 1.5rem; margin-bottom: 0.5rem;">
+                🚨 <span data-i18n="setup_required_locked">Setup Required - Application Locked</span>
+            </h3>
+            <p style="color: #7C2D12; margin: 0.5rem 0; font-size: 1.1rem; line-height: 1.6;">
+                <strong data-i18n="mission_details_mandatory">Mission details are mandatory</strong>
+                <span data-i18n="before_use_app">before you can use the application. All menu functions are disabled
+                    until configuration is complete.</span>
+            </p>
+            <button onclick="loadPage('mission-details')" class="btn btn-primary"
+                style="margin-top: 1rem; font-size: 1.1rem; padding: 0.75rem 2rem;">
+                ⚙️ <span data-i18n="configure_mission_now">Configure Mission Details Now</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard / Welcome Page -->
+<div id="page-dashboard" class="page-content active">
+    <div class="welcome-banner">
+        <h2 data-i18n="welcome">Welcome to MidFlow</h2>
+        <p data-i18n="welcome_message">Select an option from the menu to get started</p>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info">
+                <h3 id="total-items">0</h3>
+                <p data-i18n="total_items">Total Items</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+                <h3 id="total-orders">0</h3>
+                <p data-i18n="total_orders">Active Orders</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🚚</div>
+            <div class="stat-info">
+                <h3 id="total-cargo">0</h3>
+                <p data-i18n="total_cargo">Cargo Items</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-info">
+                <h3 id="expiring-items">0</h3>
+                <p data-i18n="expiring_items">Expiring Soon</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Content Container - Pages load here -->
+<div id="dynamic-page-container"></div>
+</div>
+
+<script>
+    // Check project details on dashboard load
+    async function checkProjectDetailsOnDashboard() {
+        try {
+            const response = await fetch('/api/mission-details/check');
+            const result = await response.json();
+
+            if (!result.exists) {
+                // Show warning banner
+                document.getElementById('project-warning-banner').style.display = 'block';
+
+                // Disable all menu items except mission-project
+                disableMenuExceptProjectSetup();
+            } else {
+                document.getElementById('project-warning-banner').style.display = 'none';
+                enableAllMenuItems();
+            }
+        } catch (error) {
+            console.error('Error checking project details:', error);
+        }
+    }
+
+    // Disable menu items
+    function disableMenuExceptProjectSetup() {
+        document.querySelectorAll('.nav-link, .nav-section-header').forEach(el => {
+            const isProjectLink = el.getAttribute('onclick')?.includes('mission-project');
+
+            if (!isProjectLink && el.classList.contains('nav-link')) {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+                el.style.cursor = 'not-allowed';
+                el.title = 'Configure project details first';
+            }
+        });
+
+        // Disable dashboard stats cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.style.opacity = '0.5';
+        });
+    }
+
+    // Enable menu items
+    function enableAllMenuItems() {
+        document.querySelectorAll('.nav-link, .nav-section-header').forEach(el => {
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+            el.style.cursor = 'pointer';
+            el.title = '';
+        });
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.style.opacity = '1';
+        });
+    }
+
+    // Run check when dashboard loads
+    checkProjectDetailsOnDashboard();
+</script>
+{% endblock %}
