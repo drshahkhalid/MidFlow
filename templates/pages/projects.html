@@ -1,0 +1,135 @@
+<div class="page-content active">
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2>🎯 <span data-i18n="projects_page_title">Project Management</span></h2>
+                <p data-i18n="projects_page_subtitle">Manage all projects under the mission</p>
+            </div>
+            <button class="btn btn-primary" onclick="openProjectModal()" id="add-project-btn">
+                ➕ <span data-i18n="add_new_project">Add New Project</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Projects Table -->
+    <div class="form-card">
+        <div style="margin-bottom: 1rem;">
+            <h3 data-i18n="projects_list">Projects List</h3>
+            <p style="color: #6B7280; font-size: 0.95rem;">
+                <span data-i18n="total_projects">Total Projects:</span>
+                <strong id="project-count">0</strong>
+            </p>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th data-i18n="project_name">Project Name</th>
+                        <th style="width: 150px;" data-i18n="project_code">Project Code</th>
+                        <th data-i18n="description">Description</th>
+                        <th style="width: 120px;" data-i18n="created_by">Created By</th>
+                        <th style="width: 150px;" data-i18n="actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="projects-table-body">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #9CA3AF;">
+                            <span data-i18n="loading_projects">Loading projects...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 600px;">
+            <div class="popup-header">
+                <h3 class="popup-title" id="modal-title" data-i18n="add_new_project">Add New Project</h3>
+                <button class="popup-close" onclick="closeProjectModal()">×</button>
+            </div>
+
+            <form id="project-form">
+                <input type="hidden" id="project-id">
+
+                <div class="form-group">
+                    <label>
+                        <span data-i18n="project_name">Project Name</span>
+                        <span style="color: red;">*</span>
+                    </label>
+                    <input type="text" id="project-name" required maxlength="200"
+                        data-i18n-placeholder="project_name_placeholder">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span data-i18n="project_code">Project Code</span>
+                        <span style="color: red;">*</span>
+                    </label>
+                    <input type="text" id="project-code" required maxlength="50"
+                        data-i18n-placeholder="project_code_placeholder" style="text-transform: uppercase;">
+                    <small style="color: #6B7280;" data-i18n="project_code_hint">Unique identifier
+                        (auto-uppercase)</small>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="description">Description</label>
+                    <textarea id="project-description" rows="3" maxlength="500"
+                        data-i18n-placeholder="project_description_placeholder"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success" id="save-project-btn">
+                        💾 <span data-i18n="save_project">Save Project</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeProjectModal()"
+                        data-i18n="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 450px;">
+            <div class="popup-header">
+                <h3 class="popup-title">⚠️ <span data-i18n="confirm_delete">Confirm Delete</span></h3>
+                <button class="popup-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p data-i18n="confirm_delete_project_question">Are you sure you want to delete this project?</p>
+                <p style="color: #DC2626; font-weight: 600; margin-top: 0.5rem;" id="delete-project-name"></p>
+                <p style="color: #6B7280; font-size: 0.9rem; margin-top: 1rem;" data-i18n="action_cannot_undone">This
+                    action cannot be undone.</p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmDelete()" id="confirm-delete-btn">
+                    🗑️ <span data-i18n="delete_project">Delete Project</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden translation elements for JavaScript -->
+    <div style="display: none;">
+        <span data-i18n="edit_project" id="trans-edit-project">Edit Project</span>
+        <span data-i18n="no_projects_found" id="trans-no-projects">No projects found</span>
+        <span data-i18n="click_add_first_project" id="trans-click-add">Click "Add New Project" to create your first
+            project</span>
+        <span data-i18n="no_description" id="trans-no-description">No description</span>
+        <span data-i18n="unknown" id="trans-unknown">Unknown</span>
+        <span data-i18n="admin_only" id="trans-admin-only">Admin Only</span>
+        <span data-i18n="saving" id="trans-saving">Saving...</span>
+        <span data-i18n="deleting" id="trans-deleting">Deleting...</span>
+        <span data-i18n="project_not_found" id="trans-project-not-found">Project not found</span>
+        <span data-i18n="project_name_code_required" id="trans-name-code-required">Project name and code are
+            required</span>
+        <span data-i18n="error_loading_projects" id="trans-error-loading">Error loading projects</span>
+        <span data-i18n="error_saving_project" id="trans-error-saving">Error saving project</span>
+        <span data-i18n="error_deleting_project" id="trans-error-deleting">Error deleting project</span>
+    </div>
+</div>

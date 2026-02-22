@@ -1,0 +1,118 @@
+<div class="page-content active">
+    <div class="page-header">
+        <h2>📋 <span data-i18n="mission_details_page_title">Mission Details</span></h2>
+        <p data-i18n="mission_details_page_subtitle">Configure mission information and order-related settings</p>
+    </div>
+
+    <div id="mission-form-container">
+        <div class="form-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 data-i18n="mission_configuration">Mission Configuration</h3>
+                <span id="mission-status-badge" class="badge badge-pending" style="display: none;">
+                    <span data-i18n="not_configured">Not Configured</span>
+                </span>
+            </div>
+
+            <form id="mission-details-form">
+                <input type="hidden" id="mission-id">
+
+                <!-- Mission Information -->
+                <div
+                    style="margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border: 1px solid #E5E7EB;">
+                    <h4 style="color: #1F3A8A; margin-bottom: 1rem;">
+                        📋 <span data-i18n="mission_information">Mission Information</span>
+                    </h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>
+                                <span data-i18n="mission_name">Mission Name</span>
+                                <span style="color: red;">*</span>
+                            </label>
+                            <input type="text" id="mission-name" required maxlength="200"
+                                data-i18n-placeholder="mission_name_placeholder">
+                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="mission_name_hint">Full
+                                mission name</small>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <span data-i18n="mission_abbreviation">Mission Abbreviation</span>
+                                <span style="color: red;">*</span>
+                            </label>
+                            <input type="text" id="mission-abbreviation" required maxlength="20"
+                                data-i18n-placeholder="mission_abbr_placeholder">
+                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="mission_abbr_hint">Short code
+                                (auto-uppercase)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Related Settings -->
+                <div
+                    style="margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border: 1px solid #E5E7EB;">
+                    <h4 style="color: #1F3A8A; margin-bottom: 1rem;">
+                        📦 <span data-i18n="order_related_settings">Order Related Settings</span>
+                    </h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label data-i18n="lead_time_months">Lead Time (months)</label>
+                            <input type="number" id="lead-time" min="0" max="36" value="0" placeholder="0">
+                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="lead_time_hint">Time from
+                                order to delivery (0-36)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <span data-i18n="cover_period_months">Cover Period (months)</span>
+                                <span style="color: red;">*</span>
+                            </label>
+                            <input type="number" id="cover-period" min="0" max="36" required placeholder="12">
+                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="cover_period_hint">Mission
+                                duration (0-36)</small>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="security_stock_months">Security Stock (months)</label>
+                            <input type="number" id="security-stock" min="0" max="36" value="0" placeholder="0">
+                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="security_stock_hint">Buffer
+                                stock duration (0-36)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success" id="save-mission-btn">
+                        💾 <span data-i18n="save_mission_details">Save Mission Details</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="loadPage('dashboard')"
+                        data-i18n="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Card -->
+        <div class="form-card"
+            style="background: linear-gradient(135deg, #EBF5FF, #F0F9FF); border-left: 4px solid var(--mid-blue);">
+            <h4 style="color: #1F3A8A; margin-bottom: 0.75rem;">
+                ℹ️ <span data-i18n="important_information">Important Information</span>
+            </h4>
+            <ul style="margin-left: 1.5rem; color: #374151; line-height: 1.8;">
+                <li data-i18n="mission_info_note_1">✅ Mission details are required for the application to function</li>
+                <li data-i18n="mission_info_note_2">✅ Cover Period is mandatory for order calculations</li>
+                <li data-i18n="mission_info_note_3">⚠️ Only <strong>Administrator (HQ)</strong> users can update mission
+                    details
+                </li>
+                <li data-i18n="mission_info_note_4">📋 Manage projects separately in <strong>Project Management</strong>
+                    page
+                </li>
+            </ul>
+        </div>
+
+        <!-- Hidden translation elements for JavaScript -->
+        <div style="display: none;">
+            <span data-i18n="configured" id="trans-configured">Configured</span>
+            <span data-i18n="saving" id="trans-saving">Saving...</span>
+            <span data-i18n="update_restricted_admin" id="trans-update-restricted">Update Restricted to
+                Administrators</span>
+            <span data-i18n="save_mission_details" id="trans-save-mission">Save Mission Details</span>
+        </div>
+    </div>
+</div>

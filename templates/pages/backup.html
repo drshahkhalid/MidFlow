@@ -1,0 +1,132 @@
+<div class="page-content active">
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2>💾 <span data-i18n="backup_page_title">Database Backup</span></h2>
+                <p data-i18n="backup_page_subtitle">Create and manage database backups</p>
+            </div>
+            <button class="btn btn-success" onclick="createBackup()" id="create-backup-btn">
+                ➕ <span data-i18n="create_backup">Create New Backup</span>
+            </button>
+        </div>
+    </div>
+
+
+
+    <!-- Backup Content -->
+    <div id="backup-content">
+
+        <!-- Information Card -->
+        <div class="form-card"
+            style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); border: 2px solid #3B82F6;">
+            <h3 style="color: #1E40AF; margin-bottom: 1rem;">ℹ️ <span data-i18n="backup_info_title">Backup
+                    Information</span></h3>
+            <div style="color: #1E3A8A; line-height: 1.8;">
+                <p><strong data-i18n="backup_info_1">✅ Backups include all database data (users, projects, orders,
+                        cargo, etc.)</strong></p>
+                <p><strong data-i18n="backup_info_2">✅ Each backup is verified with SHA-256 integrity hash</strong></p>
+                <p><strong data-i18n="backup_info_3">⚠️ Store backups in a safe location outside the
+                        application</strong></p>
+                <p><strong data-i18n="backup_info_4">📋 Regular backups are recommended before major operations</strong>
+                </p>
+            </div>
+        </div>
+
+        <!-- Current Database Info -->
+        <div class="form-card">
+            <h3 data-i18n="current_database_info">Current Database Information</h3>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div class="stat-card" style="background: #F0F9FF; border: 2px solid #3B82F6;">
+                    <div style="font-size: 2rem;">👥</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #1E40AF;" id="db-users-count">-</div>
+                    <div style="color: #1E3A8A;" data-i18n="total_users">Total Users</div>
+                </div>
+                <div class="stat-card" style="background: #F0FDF4; border: 2px solid #10B981;">
+                    <div style="font-size: 2rem;">🎯</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #065F46;" id="db-projects-count">-</div>
+                    <div style="color: #064E3B;" data-i18n="total_projects">Total Projects</div>
+                </div>
+                <div class="stat-card" style="background: #FEF3C7; border: 2px solid #F59E0B;">
+                    <div style="font-size: 2rem;">📦</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #92400E;" id="db-items-count">-</div>
+                    <div style="color: #78350F;" data-i18n="total_items">Total Items</div>
+                </div>
+                <div class="stat-card" style="background: #FEE2E2; border: 2px solid #EF4444;">
+                    <div style="font-size: 2rem;">💾</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #991B1B;" id="db-size">-</div>
+                    <div style="color: #7F1D1D;" data-i18n="database_size">Database Size</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backups List -->
+        <div class="form-card">
+            <div style="margin-bottom: 1rem;">
+                <h3 data-i18n="available_backups">Available Backups</h3>
+                <p style="color: #6B7280; font-size: 0.95rem;">
+                    <span data-i18n="backup_count">Backups:</span>
+                    <strong id="backup-count">0</strong>
+                </p>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th data-i18n="backup_filename">Filename</th>
+                            <th style="width: 120px;" data-i18n="file_size">Size</th>
+                            <th style="width: 180px;" data-i18n="created_at">Created</th>
+                            <th style="width: 200px;" data-i18n="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="backups-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: #9CA3AF;">
+                                <span data-i18n="loading_backups">Loading backups...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 450px;">
+            <div class="popup-header">
+                <h3 class="popup-title">⚠️ <span data-i18n="confirm_delete">Confirm Delete</span></h3>
+                <button class="popup-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p data-i18n="confirm_delete_backup_question">Are you sure you want to delete this backup?</p>
+                <p style="color: #DC2626; font-weight: 600; margin-top: 0.5rem;" id="delete-backup-name"></p>
+                <p style="color: #6B7280; font-size: 0.9rem; margin-top: 1rem;" data-i18n="action_cannot_undone">This
+                    action cannot be undone.</p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmDelete()" id="confirm-delete-btn">
+                    🗑️ <span data-i18n="delete_backup">Delete Backup</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden translation elements -->
+    <div style="display: none;">
+        <span data-i18n="no_backups_found" id="trans-no-backups">No backups found</span>
+        <span data-i18n="click_create_first_backup" id="trans-click-create">Click "Create New Backup" to create your
+            first backup</span>
+        <span data-i18n="creating_backup" id="trans-creating">Creating backup...</span>
+        <span data-i18n="downloading" id="trans-downloading">Downloading...</span>
+        <span data-i18n="deleting" id="trans-deleting">Deleting...</span>
+        <span data-i18n="backup_created_success" id="trans-backup-success">Backup created successfully!</span>
+        <span data-i18n="backup_deleted_success" id="trans-delete-success">Backup deleted successfully!</span>
+        <span data-i18n="error_creating_backup" id="trans-error-creating">Error creating backup</span>
+        <span data-i18n="error_loading_backups" id="trans-error-loading">Error loading backups</span>
+        <span data-i18n="error_deleting_backup" id="trans-error-deleting">Error deleting backup</span>
+    </div>
+</div>

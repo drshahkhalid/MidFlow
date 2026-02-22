@@ -1,0 +1,183 @@
+<div class="page-content active">
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2>👥 <span data-i18n="user_management_title">User Management</span></h2>
+                <p data-i18n="user_management_subtitle">Manage system users and their roles</p>
+            </div>
+            <button class="btn btn-primary" onclick="openUserModal()" id="add-user-btn">
+                ➕ <span data-i18n="add_new_user">Add New User</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Access Denied Message (for non-admin) -->
+    <div id="access-denied" style="display: none;">
+        <div class="form-card"
+            style="background: linear-gradient(135deg, #FEE2E2, #FEF3C7); border: 2px solid #DC2626;">
+            <div style="text-align: center; padding: 2rem;">
+                <span style="font-size: 4rem;">🔒</span>
+                <h3 style="color: #991B1B; margin: 1rem 0;" data-i18n="access_denied_title">Access Denied</h3>
+                <p style="color: #7C2D12; font-size: 1.1rem;" data-i18n="only_hq_admin_can_manage_users">
+                    Only <strong>Administrator (HQ)</strong> users can manage system users.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table (for admin only) -->
+    <div id="users-content" style="display: none;">
+        <div class="form-card">
+            <div style="margin-bottom: 1rem;">
+                <h3 data-i18n="users_list">Users List</h3>
+                <p style="color: #6B7280; font-size: 0.95rem;">
+                    <span data-i18n="total_users">Total Users:</span>
+                    <strong id="user-count">0</strong>
+                </p>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th data-i18n="username">Username</th>
+                            <th style="width: 150px;" data-i18n="role">Role</th>
+                            <th style="width: 120px;" data-i18n="language">Language</th>
+                            <th style="width: 180px;" data-i18n="created_at">Created At</th>
+                            <th style="width: 150px;" data-i18n="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: #9CA3AF;">
+                                <span data-i18n="loading_users">Loading users...</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 600px;">
+            <div class="popup-header">
+                <h3 class="popup-title" id="modal-title" data-i18n="add_new_user">Add New User</h3>
+                <button class="popup-close" onclick="closeUserModal()">×</button>
+            </div>
+
+            <form id="user-form">
+                <input type="hidden" id="user-id">
+
+                <div class="form-group">
+                    <label>
+                        <span data-i18n="username">Username</span>
+                        <span style="color: red;">*</span>
+                    </label>
+                    <input type="text" id="username" required maxlength="50"
+                        data-i18n-placeholder="username_placeholder">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span data-i18n="role">Role</span>
+                        <span style="color: red;">*</span>
+                    </label>
+                    <select id="user-role" required>
+                        <option value="" data-i18n="select_role">-- Select Role --</option>
+                        <option value="HQ" data-i18n="role_hq">HQ (Administrator)</option>
+                        <option value="Coordinator" data-i18n="role_coordinator">Coordinator</option>
+                        <option value="Manager" data-i18n="role_manager">Manager</option>
+                        <option value="Supervisor" data-i18n="role_supervisor">Supervisor</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span data-i18n="language">Language</span>
+                    </label>
+                    <select id="user-language">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="es">🇪🇸 Español</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="password-group">
+                    <label>
+                        <span data-i18n="password">Password</span>
+                        <span style="color: red;" id="password-required">*</span>
+                    </label>
+                    <input type="password" id="user-password" minlength="6" maxlength="100"
+                        data-i18n-placeholder="password_placeholder">
+                    <small style="color: #6B7280;" id="password-hint" data-i18n="password_hint">
+                        Minimum 6 characters. Leave blank to keep existing password.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <span data-i18n="confirm_password">Confirm Password</span>
+                        <span style="color: red;" id="confirm-password-required">*</span>
+                    </label>
+                    <input type="password" id="confirm-password" minlength="6" maxlength="100"
+                        data-i18n-placeholder="confirm_password_placeholder">
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success" id="save-user-btn">
+                        💾 <span data-i18n="save_user">Save User</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()"
+                        data-i18n="cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 450px;">
+            <div class="popup-header">
+                <h3 class="popup-title">⚠️ <span data-i18n="confirm_delete">Confirm Delete</span></h3>
+                <button class="popup-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p data-i18n="confirm_delete_user_question">Are you sure you want to delete this user?</p>
+                <p style="color: #DC2626; font-weight: 600; margin-top: 0.5rem;" id="delete-user-name"></p>
+                <p style="color: #6B7280; font-size: 0.9rem; margin-top: 1rem;" data-i18n="action_cannot_undone">This
+                    action cannot be undone.</p>
+                <p style="color: #991B1B; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 600;"
+                    data-i18n="cannot_delete_yourself">
+                    Note: You cannot delete your own account.
+                </p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmDelete()" id="confirm-delete-btn">
+                    🗑️ <span data-i18n="delete_user">Delete User</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden translation elements for JavaScript -->
+    <div style="display: none;">
+        <span data-i18n="edit_user" id="trans-edit-user">Edit User</span>
+        <span data-i18n="no_users_found" id="trans-no-users">No users found</span>
+        <span data-i18n="admin_only" id="trans-admin-only">Admin Only</span>
+        <span data-i18n="saving" id="trans-saving">Saving...</span>
+        <span data-i18n="deleting" id="trans-deleting">Deleting...</span>
+        <span data-i18n="user_not_found" id="trans-user-not-found">User not found</span>
+        <span data-i18n="passwords_do_not_match" id="trans-passwords-no-match">Passwords do not match</span>
+        <span data-i18n="password_min_6_chars" id="trans-password-min">Password must be at least 6 characters</span>
+        <span data-i18n="username_role_required" id="trans-username-role-required">Username and role are required</span>
+        <span data-i18n="error_loading_users" id="trans-error-loading">Error loading users</span>
+        <span data-i18n="error_saving_user" id="trans-error-saving">Error saving user</span>
+        <span data-i18n="error_deleting_user" id="trans-error-deleting">Error deleting user</span>
+        <span data-i18n="cannot_delete_current_user" id="trans-cannot-delete-self">You cannot delete your own
+            account</span>
+    </div>
+</div>

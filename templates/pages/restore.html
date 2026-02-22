@@ -1,1 +1,136 @@
+<div class="page-content active">
+    <div class="page-header">
+        <div>
+            <h2>♻️ <span data-i18n="restore_page_title">Database Restore</span></h2>
+            <p data-i18n="restore_page_subtitle">Restore database from backup file</p>
+        </div>
+    </div>
 
+
+
+    <!-- Restore Content -->
+    <div id="restore-content">
+
+        <!-- Warning Card -->
+        <div class="form-card"
+            style="background: linear-gradient(135deg, #FEE2E2, #FEF3C7); border: 2px solid #DC2626;">
+            <h3 style="color: #991B1B; margin-bottom: 1rem;">⚠️ <span data-i18n="warning_title">Important Warning</span>
+            </h3>
+            <div style="color: #7C2D12; line-height: 1.8;">
+                <p><strong data-i18n="restore_warning_1">⚠️ Restoring will OVERWRITE all current data</strong></p>
+                <p><strong data-i18n="restore_warning_2">✅ An automatic safety backup will be created BEFORE
+                        restoring</strong>
+                </p>
+                <p><strong data-i18n="restore_warning_3">⚠️ All users will be logged out after restore</strong></p>
+                <p><strong data-i18n="restore_warning_4">⚠️ Only restore backups from trusted sources</strong></p>
+                <p><strong style="color: #DC2626;" data-i18n="restore_warning_5">📦 You will be asked to confirm before
+                        the
+                        automatic backup is created</strong></p>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="form-card">
+            <h3 data-i18n="upload_backup_file">Upload Backup File</h3>
+            <p style="color: #6B7280; margin-bottom: 1.5rem;" data-i18n="select_backup_to_restore">
+                Select a backup file (.zip) to restore the database
+            </p>
+
+            <div
+                style="border: 3px dashed #D1D5DB; border-radius: 12px; padding: 3rem; text-align: center; background: #F9FAFB;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📁</div>
+
+                <input type="file" id="backup-file-input" accept=".zip" style="display: none;"
+                    onchange="handleFileSelect(event)">
+
+                <button class="btn btn-primary btn-lg" onclick="document.getElementById('backup-file-input').click()">
+                    📂 <span data-i18n="select_backup_file">Select Backup File</span>
+                </button>
+
+                <p style="color: #6B7280; margin-top: 1rem; font-size: 0.9rem;" data-i18n="or_drag_drop">
+                    or drag and drop a .zip file here
+                </p>
+            </div>
+
+            <!-- Selected File Info -->
+            <div id="file-info"
+                style="display: none; margin-top: 1.5rem; padding: 1rem; background: #EFF6FF; border: 2px solid #3B82F6; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: #1E40AF; font-size: 1.1rem;" id="selected-filename">-</div>
+                        <div style="color: #1E3A8A; font-size: 0.9rem; margin-top: 0.25rem;">
+                            <span data-i18n="file_size">Size:</span> <strong id="selected-filesize">-</strong>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="startRestore()" id="restore-btn">
+                        ♻️ <span data-i18n="restore_now">Restore Now</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backup Metadata (shown after file selection) -->
+        <div id="backup-metadata" class="form-card" style="display: none;">
+            <h3 data-i18n="backup_information">Backup Information</h3>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <div style="color: #6B7280; font-size: 0.9rem;" data-i18n="backup_date">Backup Date:</div>
+                    <div style="font-weight: 600; color: #1F3A8A;" id="meta-date">-</div>
+                </div>
+                <div>
+                    <div style="color: #6B7280; font-size: 0.9rem;" data-i18n="mission_code">Mission Code:</div>
+                    <div style="font-weight: 600; color: #1F3A8A;" id="meta-mission">-</div>
+                </div>
+                <div>
+                    <div style="color: #6B7280; font-size: 0.9rem;" data-i18n="created_by">Created By:</div>
+                    <div style="font-weight: 600; color: #1F3A8A;" id="meta-creator">-</div>
+                </div>
+                <div>
+                    <div style="color: #6B7280; font-size: 0.9rem;" data-i18n="integrity_check">Integrity Check:</div>
+                    <div style="font-weight: 600;" id="meta-integrity">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Restore Progress -->
+        <div id="restore-progress" class="form-card" style="display: none;">
+            <h3 data-i18n="restore_in_progress">Restore in Progress...</h3>
+            <div style="margin-top: 1rem;">
+                <div
+                    style="background: #E5E7EB; height: 40px; border-radius: 8px; overflow: hidden; position: relative;">
+                    <div id="progress-bar"
+                        style="background: linear-gradient(90deg, #3B82F6, #10B981); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center;">
+                        <span id="progress-text"
+                            style="color: white; font-weight: 600; position: absolute; width: 100%; text-align: center;">0%</span>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; color: #6B7280;" id="progress-message"
+                    data-i18n="uploading_file">Uploading file...</p>
+            </div>
+        </div>
+
+        <!-- Restore Results -->
+        <div id="restore-results" class="form-card" style="display: none;">
+            <h3 style="color: #059669;">✅ <span data-i18n="restore_complete">Restore Complete!</span></h3>
+            <div id="results-content" style="margin-top: 1rem; line-height: 1.8;">
+                <!-- Results will be inserted here -->
+            </div>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn btn-primary" onclick="window.location.href='/logout'">
+                    <span data-i18n="logout_and_login">Logout and Login Again</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden translation elements -->
+    <div style="display: none;">
+        <span data-i18n="invalid_file_type" id="trans-invalid-file">Invalid file type. Please select a .zip file</span>
+        <span data-i18n="restoring" id="trans-restoring">Restoring database...</span>
+        <span data-i18n="error_restoring" id="trans-error-restoring">Error restoring backup</span>
+        <span data-i18n="confirm_restore_title" id="trans-confirm-title">Confirm Restore</span>
+        <span data-i18n="confirm_restore_message" id="trans-confirm-message">This will overwrite ALL current data. A
+            safety backup will be created. Continue?</span>
+    </div>
+</div>
