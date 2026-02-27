@@ -41,7 +41,7 @@ async function loadPage(pageName) {
         // Load page-specific JavaScript
         await loadPageScript(pageName);
 
-        // **NEW: Re-initialize page if script already loaded**
+        // Re-initialize page if script already loaded
         await reinitializePage(pageName);
 
         // Translate the newly loaded page
@@ -96,26 +96,34 @@ function showDashboard() {
     // Update active nav link
     updateActiveNavLink('dashboard');
 
-    // Translate dashboard if needed
+    // Translate dashboard if needed - WAIT for translations to load first
     if (typeof window.translatePage === 'function') {
-        window.translatePage();
+        if (window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length > 0) {
+            window.translatePage();
+        } else {
+            console.log('⏳ Waiting for translations to load...');
+            const checkTranslations = setInterval(() => {
+                if (window.i18n && window.i18n.translations && Object.keys(window.i18n.translations).length > 0) {
+                    clearInterval(checkTranslations);
+                    console.log('✅ Translations ready, translating dashboard...');
+                    window.translatePage();
+                }
+            }, 50);
+        }
     }
 }
 
 // Update active navigation link
 function updateActiveNavLink(pageName) {
-    // Remove active class from all nav links
     document.querySelectorAll('.nav-link, .nav-dashboard-link').forEach(link => {
         link.classList.remove('active');
     });
 
-    // Add active class to current page link
     const activeLink = document.querySelector(`[data-page="${pageName}"]`);
     if (activeLink) {
         activeLink.classList.add('active');
     }
 
-    // For dynamically loaded pages, find by onclick attribute
     if (!activeLink) {
         document.querySelectorAll('.nav-link').forEach(link => {
             const onclickAttr = link.getAttribute('onclick');
@@ -129,13 +137,11 @@ function updateActiveNavLink(pageName) {
 // Load page-specific JavaScript
 async function loadPageScript(pageName) {
     try {
-        // Convert page-name to page-name.js (keep dashes)
         const scriptName = `${pageName}.js`;
         const scriptUrl = `/static/js/pages/${scriptName}`;
 
         console.log(`🔍 Attempting to load script: ${scriptUrl}`);
 
-        // Check if script already loaded
         const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
         if (existingScript) {
             console.log('ℹ️ Script already loaded, skipping');
@@ -145,11 +151,15 @@ async function loadPageScript(pageName) {
         const response = await fetch(scriptUrl);
 
         if (response.ok) {
-            const script = document.createElement('script');
-            script.src = scriptUrl;
-            script.async = false;
-            document.body.appendChild(script);
-            console.log(`✅ Loaded script: ${scriptName}`);
+            // Wait for the script to fully load and execute before returning
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = scriptUrl;
+                script.async = false;
+                script.onload = () => { console.log(`✅ Loaded script: ${scriptName}`); resolve(); };
+                script.onerror = () => { console.warn(`⚠️ Script load error: ${scriptName}`); resolve(); };
+                document.body.appendChild(script);
+            });
         } else {
             console.log(`ℹ️ No specific script for ${pageName}`);
         }
@@ -158,9 +168,9 @@ async function loadPageScript(pageName) {
     }
 }
 
-// **NEW: Re-initialize page when navigating back to it**
+// Re-initialize page when navigating back to it
 async function reinitializePage(pageName) {
-    // Wait a bit for HTML to be fully inserted
+    // Wait for HTML to be fully inserted into DOM
     await new Promise(resolve => setTimeout(resolve, 150));
 
     console.log(`🔄 Checking for initialization function for: ${pageName}`);
@@ -171,8 +181,18 @@ async function reinitializePage(pageName) {
         'restore': 'initRestorePage',
         'user-management': 'initUserManagementPage',
         'mission-details': 'initMissionDetailsPage',
-        'projects': 'initProjectsPage'
-        // Add more pages as you create them
+        'projects': 'initProjectsPage',
+        'end-users': 'initEndUsersPage',
+        'third-parties': 'initThirdPartiesPage',
+        'order-generation': 'initOrderGenerationPage',
+        'cargo-reception':  'initCargoReceptionPage',
+        'movements-in':     'initMovementsInPage',
+        'movements-out':    'initMovementsOutPage',
+        'reports':          'initReportsPage',
+        'inventory':        'initInventoryPage',
+        'expiry-report':    'initExpiryReportPage',
+        'reception-report': 'initReceptionReportPage',
+        'cargo-followup':   'initCargoFollowupPage',
     };
 
     const functionName = initFunctions[pageName];
@@ -189,10 +209,19 @@ async function reinitializePage(pageName) {
     }
 }
 
-// Toggle sidebar (for mobile)
+// Toggle sidebar — slides off-screen, reopen btn appears at left edge
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
+    const mainContent = document.querySelector('.main-content');
+    if (!sidebar) return;
+
+    if (window.innerWidth > 1024) {
+        // Desktop: slide sidebar off, expand main content, show fixed reopen btn
+        sidebar.classList.toggle('collapsed');
+        const collapsed = sidebar.classList.contains('collapsed');
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        if (mainContent) mainContent.classList.toggle('expanded', collapsed);
+    } else {
         sidebar.classList.toggle('active');
     }
 }
@@ -218,10 +247,11 @@ function toggleSection(header) {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('📄 DOM loaded, initializing navigation...');
 
-    // Show dashboard by default
-    showDashboard();
+    setTimeout(() => {
+        showDashboard();
+    }, 100);
 
-    // Expand all sections by default
+    // Expand all nav sections by default
     document.querySelectorAll('.nav-section').forEach(section => {
         section.classList.add('active');
         const content = section.querySelector('.nav-section-content');
@@ -241,7 +271,6 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('🎯 Attaching language button handlers...');
 
-    // Wait for i18n to be available
     const attachLanguageHandlers = () => {
         if (typeof window.i18n === 'undefined') {
             console.log('⏳ Waiting for i18n...');
