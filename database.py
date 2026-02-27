@@ -1,13 +1,24 @@
 import sqlite3
 import os
+import sys
 from datetime import datetime
 
+# Ensure stdout can handle Unicode/emoji on Windows (cp1252 terminal)
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+except AttributeError:
+    pass
+
+# Always resolve paths relative to this file, not the CWD
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Ensure data directory exists
-if not os.path.exists('data'):
-    os.makedirs('data')
+_data_dir = os.path.join(_BASE_DIR, 'data')
+if not os.path.exists(_data_dir):
+    os.makedirs(_data_dir)
     print("Created 'data' directory")
 
-DATABASE = 'data/inventory.db'
+DATABASE = os.path.join(_BASE_DIR, 'data', 'inventory.db')
 
 def init_db():
     """Initialize the database with tables"""
@@ -143,6 +154,65 @@ def init_db():
             )
         ''')
         
+        # Create end_users table
+        cursor.execute('''
+                CREATE TABLE IF NOT EXISTS end_users (
+                    end_user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    user_type TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+        
+            # Create indexes for end_users
+        cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_end_users_name 
+                ON end_users(name)
+            ''')
+            
+        cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_end_users_type 
+                ON end_users(user_type)
+            ''')
+
+        conn.commit()
+        conn.close()
+        print("✅ Database initialized successfully")
+
+
+        # Create third_parties table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS third_parties (
+                third_party_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                city TEXT,
+                address TEXT,
+                contact_person TEXT,
+                email TEXT,
+                phone TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Create indexes for third_parties
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_third_parties_name 
+            ON third_parties(name)
+        ''')
+
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_third_parties_type 
+            ON third_parties(type)
+        ''')
+
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_third_parties_city 
+            ON third_parties(city)
+        ''')
+
         # Import here to avoid circular imports
         from werkzeug.security import generate_password_hash
         
@@ -257,9 +327,409 @@ def update_database_schema():
         if users_to_update:
             print(f"✅ Updated {len(users_to_update)} user roles to new format")
         
+        # ── Cargo Reception tables ────────────────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cargo_summary'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE cargo_summary (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    parcel_number TEXT UNIQUE,
+                    transport_reception TEXT,
+                    sub_folder NUMERIC,
+                    field_ref TEXT,
+                    ref_op_msfl NUMERIC,
+                    goods_reception NUMERIC,
+                    parcel_nb NUMERIC,
+                    weight_kg REAL,
+                    volume_m3 REAL,
+                    invoice_credit_note_ref NUMERIC,
+                    estim_value_eu REAL,
+                    reception_status TEXT DEFAULT 'Pending',
+                    received_at TIMESTAMP,
+                    received_by INTEGER,
+                    order_type TEXT DEFAULT 'Internal',
+                    notes TEXT,
+                    cargo_session_id TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (received_by) REFERENCES users(id)
+                )
+            ''')
+            cursor.execute('''
+                CREATE TRIGGER trg_cargo_summary_insert
+                AFTER INSERT ON cargo_summary
+                FOR EACH ROW
+                BEGIN
+                    UPDATE cargo_summary
+                    SET parcel_number =
+                        CASE
+                            WHEN NEW.goods_reception IS NOT NULL AND NEW.goods_reception != ''
+                            THEN CAST(NEW.goods_reception AS TEXT) || CAST(COALESCE(NEW.parcel_nb,'') AS TEXT)
+                            ELSE CAST(COALESCE(NEW.parcel_nb,'') AS TEXT)
+                        END
+                    WHERE id = NEW.id AND (NEW.parcel_number IS NULL OR NEW.parcel_number = '');
+                END
+            ''')
+            cursor.execute('''
+                CREATE TRIGGER trg_cargo_summary_update
+                AFTER UPDATE OF goods_reception, parcel_nb ON cargo_summary
+                FOR EACH ROW
+                BEGIN
+                    UPDATE cargo_summary
+                    SET parcel_number =
+                        CASE
+                            WHEN NEW.goods_reception IS NOT NULL AND NEW.goods_reception != ''
+                            THEN CAST(NEW.goods_reception AS TEXT) || CAST(COALESCE(NEW.parcel_nb,'') AS TEXT)
+                            ELSE CAST(COALESCE(NEW.parcel_nb,'') AS TEXT)
+                        END
+                    WHERE id = NEW.id;
+                END
+            ''')
+            print("✅ Created cargo_summary table + triggers")
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cargo_packing_list'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE cargo_packing_list (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    parcel_number TEXT,
+                    packing_ref TEXT,
+                    line_no INTEGER,
+                    item_code TEXT,
+                    item_description TEXT,
+                    qty_unit_tot REAL,
+                    packaging REAL,
+                    parcel_n TEXT,
+                    nb_parcels INTEGER,
+                    batch_no TEXT,
+                    exp_date TEXT,
+                    kg_total REAL,
+                    dm3_total REAL,
+                    parcel_nb INTEGER,
+                    cargo_session_id TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_cpl_parcel_number ON cargo_packing_list(parcel_number)
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_cpl_packing_ref ON cargo_packing_list(packing_ref)
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_cpl_session ON cargo_packing_list(cargo_session_id)
+            ''')
+            print("✅ Created cargo_packing_list table")
+
+        # Add reception_status / received columns to cargo_summary if missing (schema migration)
+        cursor.execute("PRAGMA table_info(cargo_summary)")
+        cs_cols = [c[1] for c in cursor.fetchall()]
+        for col, defn in [
+            ('reception_status',  "TEXT DEFAULT 'Pending'"),
+            ('received_at',       'TIMESTAMP'),
+            ('received_by',       'INTEGER'),
+            ('order_type',        "TEXT DEFAULT 'Internal'"),
+            ('notes',             'TEXT'),
+            ('cargo_session_id',  'TEXT'),
+            ('created_at',        'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
+        ]:
+            if col not in cs_cols:
+                try:
+                    cursor.execute(f'ALTER TABLE cargo_summary ADD COLUMN {col} {defn}')
+                    print(f"✅ Added {col} to cargo_summary")
+                except Exception:
+                    pass
+
+        # ── stock_transactions table (cargo reception ledger) ──────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='stock_transactions'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE stock_transactions (
+                    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+                    reception_number     TEXT,
+                    transaction_type     TEXT DEFAULT 'RECEPTION',
+                    parcel_number        TEXT,
+                    packing_ref          TEXT,
+                    line_no              INTEGER,
+                    item_code            TEXT,
+                    item_description     TEXT,
+                    qty_received         REAL,
+                    packaging            REAL,
+                    batch_no             TEXT,
+                    exp_date             TEXT,
+                    order_number         TEXT,
+                    field_ref            TEXT,
+                    pallet_number        TEXT,
+                    transport_reception  TEXT,
+                    weight_kg            REAL,
+                    volume_m3            REAL,
+                    estim_value_eu       REAL,
+                    mission_abbreviation TEXT,
+                    received_by          INTEGER,
+                    received_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    cargo_session_id     TEXT,
+                    notes                TEXT,
+                    FOREIGN KEY (received_by) REFERENCES users(id)
+                )
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_st_reception_number ON stock_transactions(reception_number)
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_st_parcel_number ON stock_transactions(parcel_number)
+            ''')
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_st_item_code ON stock_transactions(item_code)
+            ''')
+            print("✅ Created stock_transactions table")
+
+        # ── Cargo-reception columns on basic_data (schema migration) ──────────
+        cursor.execute("PRAGMA table_info(basic_data)")
+        bd_cols = [c[1] for c in cursor.fetchall()]
+
+        # Fix legacy capital-P column name (Parcel_number → parcel_number)
+        if 'Parcel_number' in bd_cols:
+            try:
+                cursor.execute('ALTER TABLE basic_data RENAME COLUMN "Parcel_number" TO parcel_number')
+                bd_cols = [c if c != 'Parcel_number' else 'parcel_number' for c in bd_cols]
+                print("✅ Renamed Parcel_number → parcel_number in basic_data")
+            except Exception as _re:
+                print(f"⚠️ Could not rename Parcel_number: {_re}")
+
+        for col, defn in [
+            ('parcel_number',    'TEXT'),
+            ('reception_status', "TEXT DEFAULT 'Pending'"),
+            ('reception_number', 'TEXT'),
+            ('received_at',      'TIMESTAMP'),
+            ('received_by',      'INTEGER'),
+            ('pallet_number',    'TEXT'),
+            ('cargo_session_id', 'TEXT'),
+            ('order_type',       'TEXT'),
+            ('parcel_note',      'TEXT'),
+            ('project_code',     'TEXT'),
+            ('qty_received',     'REAL'),
+            ('exp_date_received','TEXT'),
+            ('batch_no_received','TEXT'),
+        ]:
+            if col not in bd_cols:
+                try:
+                    cursor.execute(f'ALTER TABLE basic_data ADD COLUMN {col} {defn}')
+                    print(f"✅ Added {col} to basic_data")
+                except Exception:
+                    pass
+
+        # ── Cargo-reception columns on order_lines (schema migration) ─────────
+        cursor.execute("PRAGMA table_info(order_lines)")
+        ol_cols = [c[1] for c in cursor.fetchall()]
+
+        for col, defn in [
+            ('order_type',        'TEXT'),
+            ('qty_received',      'REAL DEFAULT 0'),
+            ('exp_date_received', 'TEXT'),
+            ('batch_no_received', 'TEXT'),
+            ('received_at',       'TIMESTAMP'),
+            ('received_by',       'INTEGER'),
+            ('reception_status',  "TEXT DEFAULT 'Pending'"),
+        ]:
+            if col not in ol_cols:
+                try:
+                    cursor.execute(f'ALTER TABLE order_lines ADD COLUMN {col} {defn}')
+                    print(f"✅ Added {col} to order_lines")
+                except Exception:
+                    pass
+
+        # Backfill order_lines.order_type from orders.order_type
+        cursor.execute("""
+            UPDATE order_lines
+            SET order_type = (
+                SELECT o.order_type FROM orders o
+                WHERE o.order_number = order_lines.order_number
+                LIMIT 1
+            )
+            WHERE order_type IS NULL
+        """)
+        backfilled = cursor.rowcount
+        if backfilled > 0:
+            print(f"✅ Backfilled order_type for {backfilled} order_lines rows")
+
+        # ── movement_lines extra column: parcel_number ────────────────────────
+        cursor.execute("PRAGMA table_info(movement_lines)")
+        ml_cols = [c[1] for c in cursor.fetchall()]
+        if ml_cols and 'parcel_number' not in ml_cols:
+            try:
+                cursor.execute('ALTER TABLE movement_lines ADD COLUMN parcel_number TEXT')
+                print("✅ Added parcel_number to movement_lines")
+            except Exception:
+                pass
+
+        # ── stock_transactions extra columns for IN/OUT movements ────────────
+        cursor.execute("PRAGMA table_info(stock_transactions)")
+        st_cols = [c[1] for c in cursor.fetchall()]
+        for col, defn in [
+            ('project_code', 'TEXT'),
+            ('sign',         'INTEGER DEFAULT 1'),
+            ('movement_id',  'INTEGER'),
+        ]:
+            if st_cols and col not in st_cols:
+                try:
+                    cursor.execute(f'ALTER TABLE stock_transactions ADD COLUMN {col} {defn}')
+                    print(f"✅ Added {col} to stock_transactions")
+                except Exception:
+                    pass
+
+        # ── end_users / third_parties (ensure exist for fresh installs) ───────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='end_users'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE end_users (
+                    end_user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    user_type TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_end_users_name ON end_users(name)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_end_users_type ON end_users(user_type)')
+            print("✅ Created end_users table")
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='third_parties'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE third_parties (
+                    third_party_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    city TEXT,
+                    address TEXT,
+                    contact_person TEXT,
+                    email TEXT,
+                    phone TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_third_parties_name ON third_parties(name)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_third_parties_type ON third_parties(type)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_third_parties_city ON third_parties(city)')
+            print("✅ Created third_parties table")
+
+        # ── doc_sequences (document number counters) ──────────────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='doc_sequences'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE doc_sequences (
+                    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                    doc_type TEXT NOT NULL,
+                    year     INTEGER NOT NULL,
+                    last_seq INTEGER DEFAULT 0,
+                    UNIQUE(doc_type, year)
+                )
+            ''')
+            print("✅ Created doc_sequences table")
+
+        # ── movements (IN/OUT document headers) ───────────────────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='movements'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE movements (
+                    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                    document_number TEXT UNIQUE,
+                    movement_type   TEXT NOT NULL,
+                    doc_type        TEXT NOT NULL,
+                    movement_date   TEXT NOT NULL,
+                    source_project  TEXT,
+                    dest_project    TEXT,
+                    end_user_id     INTEGER REFERENCES end_users(end_user_id),
+                    third_party_id  INTEGER REFERENCES third_parties(third_party_id),
+                    status          TEXT DEFAULT 'Draft',
+                    total_weight_kg REAL DEFAULT 0,
+                    total_volume_m3 REAL DEFAULT 0,
+                    notes           TEXT,
+                    created_by      INTEGER REFERENCES users(id),
+                    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_mov_doc_number ON movements(document_number)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_mov_type ON movements(movement_type)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_mov_date ON movements(movement_date)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_mov_source ON movements(source_project)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_mov_dest ON movements(dest_project)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_mov_status ON movements(status)')
+            print("✅ Created movements table")
+
+        # ── movement_lines (line items for each movement) ─────────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='movement_lines'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE movement_lines (
+                    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                    movement_id      INTEGER NOT NULL REFERENCES movements(id) ON DELETE CASCADE,
+                    document_number  TEXT,
+                    line_no          INTEGER,
+                    item_code        TEXT,
+                    item_description TEXT,
+                    qty              REAL NOT NULL DEFAULT 0,
+                    unit             TEXT,
+                    batch_no         TEXT,
+                    exp_date         TEXT,
+                    unit_price       REAL DEFAULT 0,
+                    currency         TEXT DEFAULT 'USD',
+                    total_value      REAL DEFAULT 0,
+                    weight_kg        REAL DEFAULT 0,
+                    volume_m3        REAL DEFAULT 0,
+                    pallet_number    TEXT,
+                    notes            TEXT,
+                    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_ml_movement_id ON movement_lines(movement_id)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_ml_item_code ON movement_lines(item_code)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_ml_doc_number ON movement_lines(document_number)')
+            print("✅ Created movement_lines table")
+
+        # ── inventory_counts (physical inventory sessions) ────────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='inventory_counts'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE inventory_counts (
+                    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    count_date   TEXT NOT NULL,
+                    project_code TEXT,
+                    count_type   TEXT NOT NULL,
+                    status       TEXT DEFAULT 'Open',
+                    notes        TEXT,
+                    created_by   INTEGER REFERENCES users(id),
+                    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            print("✅ Created inventory_counts table")
+
+        # ── inventory_count_lines ─────────────────────────────────────────────
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='inventory_count_lines'")
+        if not cursor.fetchone():
+            cursor.execute('''
+                CREATE TABLE inventory_count_lines (
+                    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                    count_id         INTEGER NOT NULL REFERENCES inventory_counts(id) ON DELETE CASCADE,
+                    parcel_number    TEXT,
+                    item_code        TEXT,
+                    item_description TEXT,
+                    batch_no         TEXT,
+                    exp_date         TEXT,
+                    system_qty       REAL DEFAULT 0,
+                    physical_qty     REAL DEFAULT 0,
+                    variance         REAL DEFAULT 0,
+                    notes            TEXT
+                )
+            ''')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_icl_count_id ON inventory_count_lines(count_id)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_icl_item_code ON inventory_count_lines(item_code)')
+            print("✅ Created inventory_count_lines table")
+
         conn.commit()
         print("✅ Database schema updated successfully")
-        
+
     except Exception as e:
         print(f"⚠️ Error updating schema: {e}")
         conn.rollback()

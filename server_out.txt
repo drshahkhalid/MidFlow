@@ -1,0 +1,53 @@
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\app.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+Exception in thread Thread-1 (serve_forever):
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\app.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\app.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\app.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\app.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\app.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
+ * Detected change in 'C:\\MidFlow - Copy-5\\database.py', reloading
+🔄 Checking database schema for updates...
+✅ Database schema updated successfully
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 490-617-172
