@@ -21,60 +21,6 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 
-    <style>
-        /* Language Selector Styling */
-        .language-selector {
-            display: flex;
-            gap: 0.5rem;
-            margin-right: 1rem;
-        }
-
-        .lang-btn {
-            padding: 0.5rem 1rem;
-            border: 2px solid #E5E7EB;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            color: #374151;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-
-        .lang-btn:hover {
-            background: #F3F4F6;
-            border-color: #3B82F6;
-            transform: translateY(-2px);
-        }
-
-        .lang-btn.active {
-            background: var(--primary-blue, #3B82F6);
-            color: white;
-            border-color: var(--primary-blue, #3B82F6);
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        }
-
-        .lang-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* User Badge Styling */
-        .user-badge {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-    </style>
-
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -120,6 +66,9 @@
     </header>
 
     <!-- Sidebar Navigation -->
+    <!-- Sidebar reopen tab — appears at left edge when sidebar is collapsed -->
+    <button class="sidebar-reopen-btn" onclick="toggleSidebar()" title="Open sidebar">›</button>
+
     <aside class="sidebar" id="sidebar">
         <nav class="sidebar-nav">
             <!-- Dashboard Link - FEATURED at top -->
@@ -140,26 +89,25 @@
                 </div>
                 <div class="nav-section-content">
                     <a href="#" class="nav-link" onclick="return loadPage('backup')">
-                        <span data-i18n="menu_backup">Backup</span>
+                        <span style="margin-right:.3rem">💾</span><span data-i18n="menu_backup">Backup</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('restore')">
-                        <span data-i18n="menu_restore">Restore</span>
+                        <span style="margin-right:.3rem">🔁</span><span data-i18n="menu_restore">Restore</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('mission-details')">
-                        <span data-i18n="menu_mission_details">Mission Details</span>
+                        <span style="margin-right:.3rem">🏢</span><span data-i18n="menu_mission_details">Mission Details</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('projects')">
-                        <span data-i18n="menu_projects">Project Management</span>
+                        <span style="margin-right:.3rem">📁</span><span data-i18n="menu_projects">Projects</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('end-users')">
-                        <span data-i18n="menu_end_users">End Users</span>
+                        <span style="margin-right:.3rem">👥</span><span data-i18n="menu_end_users">End Users</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('third-parties')">
-                        <span data-i18n="menu_third_parties">Third Parties</span>
+                        <span style="margin-right:.3rem">🤝</span><span data-i18n="menu_third_parties">Third Parties</span>
                     </a>
-                    <!-- NEW: User Management -->
                     <a href="#" class="nav-link" onclick="return loadPage('user-management')">
-                        <span data-i18n="menu_user_management">User Management</span>
+                        <span style="margin-right:.3rem">👤</span><span data-i18n="menu_user_management">User Management</span>
                     </a>
                 </div>
             </div>
@@ -173,16 +121,16 @@
                 </div>
                 <div class="nav-section-content">
                     <a href="#" class="nav-link" onclick="return loadPage('order-generation')">
-                        <span data-i18n="menu_order_generation">Order Generation</span>
+                        <span style="margin-right:.3rem">📝</span><span data-i18n="menu_order_generation">Order Generation</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('orders-followup')">
-                        <span data-i18n="menu_orders_followup">Orders Followup</span>
+                        <span style="margin-right:.3rem">🔍</span><span data-i18n="menu_orders_followup">Orders Followup</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('order-details')">
-                        <span data-i18n="menu_order_details">Order Details</span>
+                        <span style="margin-right:.3rem">📄</span><span data-i18n="menu_order_details">Order Details</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('back-orders')">
-                        <span data-i18n="menu_back_orders">Back Orders</span>
+                        <span style="margin-right:.3rem">↩️</span><span data-i18n="menu_back_orders">Back Orders</span>
                     </a>
                 </div>
             </div>
@@ -196,13 +144,13 @@
                 </div>
                 <div class="nav-section-content">
                     <a href="#" class="nav-link" onclick="return loadPage('cargo-reception')">
-                        <span data-i18n="menu_cargo_reception">Cargo Reception</span>
+                        <span style="margin-right:.3rem">📦</span><span data-i18n="menu_cargo_reception">Cargo Reception</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('cargo-followup')">
-                        <span data-i18n="menu_cargo_followup">Cargo Followup</span>
+                        <span style="margin-right:.3rem">🚚</span><span data-i18n="menu_cargo_followup">Dispatch Cargo</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('upload-cargo')">
-                        <span data-i18n="menu_upload_cargo">Upload Cargo Details</span>
+                        <span style="margin-right:.3rem">⬆️</span><span data-i18n="menu_upload_cargo">Upload Cargo</span>
                     </a>
                 </div>
             </div>
@@ -215,43 +163,25 @@
                     <span class="nav-arrow">▼</span>
                 </div>
                 <div class="nav-section-content">
-                    <a href="#" class="nav-link" onclick="return loadPage('dispatch-parcels')">
-                        <span data-i18n="menu_dispatch_parcels">Dispatch Parcels</span>
+                    <a href="#" class="nav-link" onclick="return loadPage('movements-in')">
+                        <span style="margin-right:.3rem">💊 ➕</span><span data-i18n="menu_movements_in">IN Movements</span>
                     </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('dispatch-item')">
-                        <span data-i18n="menu_dispatch_item">Dispatch Item</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('receive-parcel')">
-                        <span data-i18n="menu_receive_parcel">Receive Parcel</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('receive-item')">
-                        <span data-i18n="menu_receive_item">Receive Item</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('parcel-followup')">
-                        <span data-i18n="menu_parcel_followup">Parcel/Item Followup</span>
+                    <a href="#" class="nav-link" onclick="return loadPage('movements-out')">
+                        <span style="margin-right:.3rem">💊 ➖</span><span data-i18n="menu_movements_out">OUT Movements</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Tools Section -->
+            <!-- Inventory Section -->
             <div class="nav-section">
                 <div class="nav-section-header" onclick="toggleSection(this)">
-                    <span class="nav-icon">🛠️</span>
-                    <span data-i18n="menu_tools">Tools</span>
+                    <span class="nav-icon">🗃️</span>
+                    <span data-i18n="menu_inventory">Inventory</span>
                     <span class="nav-arrow">▼</span>
                 </div>
                 <div class="nav-section-content">
-                    <a href="#" class="nav-link" onclick="return loadPage('stock-availability')">
-                        <span data-i18n="menu_stock_availability">Stock Availability</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('stock-card')">
-                        <span data-i18n="menu_stock_card">Stock Card</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('parcel-tracing')">
-                        <span data-i18n="menu_parcel_tracing">Parcel Tracing</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('change-location')">
-                        <span data-i18n="menu_change_location">Change Parcel Location</span>
+                    <a href="#" class="nav-link" onclick="return loadPage('inventory')">
+                        <span style="margin-right:.3rem">🔢</span><span data-i18n="menu_physical_count">Physical Count</span>
                     </a>
                 </div>
             </div>
@@ -264,17 +194,14 @@
                     <span class="nav-arrow">▼</span>
                 </div>
                 <div class="nav-section-content">
-                    <a href="#" class="nav-link" onclick="return loadPage('donations')">
-                        <span data-i18n="menu_donations">Donations</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('losses')">
-                        <span data-i18n="menu_losses">Losses</span>
-                    </a>
-                    <a href="#" class="nav-link" onclick="return loadPage('sleeping-stock')">
-                        <span data-i18n="menu_sleeping_stock">Sleeping Stock</span>
+                    <a href="#" class="nav-link" onclick="return loadPage('reports')">
+                        <span style="margin-right:.3rem">📊</span><span data-i18n="menu_stock_reports">Stock Reports</span>
                     </a>
                     <a href="#" class="nav-link" onclick="return loadPage('expiry-report')">
-                        <span data-i18n="menu_expiry_report">Expiry Report</span>
+                        <span style="margin-right:.3rem">📅</span><span data-i18n="menu_expiry_report">Expiry Report</span>
+                    </a>
+                    <a href="#" class="nav-link" onclick="return loadPage('reception-report')">
+                        <span style="margin-right:.3rem">📋</span><span>Reception Report</span>
                     </a>
                 </div>
             </div>

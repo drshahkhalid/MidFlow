@@ -17,37 +17,58 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 
     <style>
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 24px 64px rgba(31, 58, 138, 0.15);
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .login-logo {
+            width: 240px;
+            margin-bottom: 2.5rem;
+            filter: drop-shadow(0 4px 12px rgba(31, 58, 138, 0.15));
+            transition: transform 0.3s;
+        }
+
+        .login-logo:hover {
+            transform: scale(1.03);
+        }
+
         /* Language Selector Styling for Login */
         .language-selector {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             margin: 1.5rem 0;
             justify-content: center;
         }
 
         .lang-btn {
-            padding: 0.6rem 1.2rem;
+            padding: 0.35rem 0.75rem;
             border: 2px solid #E5E7EB;
             background: white;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             color: #374151;
-            transition: all 0.3s ease;
-            font-size: 1rem;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
         }
 
         .lang-btn:hover {
             background: #F3F4F6;
             border-color: #3B82F6;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
         .lang-btn.active {
-            background: var(--primary-blue, #3B82F6);
+            background: var(--primary-dark-blue, #1F3A8A);
             color: white;
-            border-color: var(--primary-blue, #3B82F6);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            border-color: var(--primary-dark-blue, #1F3A8A);
+            box-shadow: 0 2px 8px rgba(31, 58, 138, 0.3);
         }
     </style>
 </head>
@@ -56,7 +77,6 @@
     <div class="login-container">
         <div class="login-card">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MidFlow Logo" class="login-logo">
-            <h2 class="login-title" data-i18n="app_title">MidFlow</h2>
 
             <form method="POST" action="/login" id="login-form">
                 <div class="form-group">
@@ -94,80 +114,44 @@
                 <span data-i18n="login_error">{{ error }}</span>
             </div>
             {% endif %}
-
-            <div
-                style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #E5E7EB; color: #6B7280; font-size: 0.85rem; text-align: center;">
-                <p><strong data-i18n="default_credentials">Default Credentials:</strong></p>
-                <p style="margin-top: 0.5rem;">
-                    <span data-i18n="username">Username</span>:
-                    <code style="background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 3px;">admin</code>
-                </p>
-                <p>
-                    <span data-i18n="password">Password</span>:
-                    <code style="background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 3px;">admin123</code>
-                </p>
-            </div>
         </div>
     </div>
+
+    <!-- Subtle branding -->
+    <p
+        style="position: fixed; bottom: 0.75rem; right: 1rem; font-size: 0.7rem; color: #0b9ce0bf; letter-spacing: 0.3px;">
+        by Dr. Shah Khalid
+    </p>
 
     <!-- Load i18n module -->
     <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
 
     <script>
-        // Language management for login page
         let currentLanguage = window.initialLanguage || 'en';
 
         function setLanguage(lang) {
-            console.log('🌐 Setting language to:', lang);
             currentLanguage = lang;
-
-            // Update hidden form field
             document.getElementById('language-field').value = lang;
-
-            // Save to localStorage immediately
             localStorage.setItem('app_language', lang);
 
-            // Update active button styling
             document.querySelectorAll('.lang-btn').forEach(btn => {
-                if (btn.dataset.lang === lang) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                btn.classList.toggle('active', btn.dataset.lang === lang);
             });
 
-            // Change language using i18n if available
             if (typeof i18n !== 'undefined' && typeof i18n.setLanguage === 'function') {
                 i18n.setLanguage(lang);
             } else if (typeof window.changeLanguage === 'function') {
                 window.changeLanguage(lang);
             }
-
-            console.log('✅ Language set to:', lang);
         }
 
-        // Initialize language on page load
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('📄 DOM loaded, initializing language...');
-
-            // Get saved language
             const savedLang = localStorage.getItem('app_language') || 'en';
-            console.log('📌 Saved language:', savedLang);
-
-            // Set the language
             setLanguage(savedLang);
 
-            // Handle form submission
-            document.getElementById('login-form').addEventListener('submit', function (e) {
-                // Ensure language is saved before form submission
-                const lang = document.getElementById('language-field').value;
-                localStorage.setItem('app_language', lang);
-                console.log('💾 Form submitting with language:', lang);
-
-                // Form will submit normally
+            document.getElementById('login-form').addEventListener('submit', function () {
+                localStorage.setItem('app_language', document.getElementById('language-field').value);
             });
-
-            console.log('✅ Login page initialized');
         });
     </script>
 </body>
