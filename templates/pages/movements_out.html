@@ -1,0 +1,164 @@
+<div class="page-content active">
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h2 data-i18n="mo_title">📤 OUT Movements</h2>
+        <p style="color:#6B7280" data-i18n="mo_subtitle">Issue, donate, loan, or transfer items from project stock</p>
+      </div>
+      <button class="btn btn-success" onclick="moNewDraft()" data-i18n="mo_new_btn">➕ New OUT Movement</button>
+    </div>
+  </div>
+
+  <!-- ── Draft Editor ─────────────────────────────────────────── -->
+  <div id="mo-editor" class="form-card" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 id="mo-editor-title">New OUT Movement</h3>
+      <button class="btn" style="background:#6B7280;color:#fff" onclick="moCancelDraft()">✕ <span data-i18n="cancel">Cancel</span></button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem">
+      <div class="form-group">
+        <label><span data-i18n="mo_out_type">OUT Type</span> <span style="color:red">*</span></label>
+        <select id="mo-doc-type" class="form-input" onchange="moOnTypeChange()">
+          <option value="">— select type —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label><span data-i18n="mi_date">Date</span> <span style="color:red">*</span></label>
+        <input type="date" id="mo-date" class="form-input">
+      </div>
+      <div class="form-group">
+        <label><span data-i18n="mo_source_project">Source Project</span> <span style="color:red">*</span></label>
+        <select id="mo-source-project" class="form-input" onchange="moLoadStock()">
+          <option value="">— select project —</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Destination section -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem">
+      <div id="mo-dest-project-wrap" class="form-group" style="display:none">
+        <label><span data-i18n="mo_dest_project">Destination Project</span> <span style="color:red">*</span></label>
+        <select id="mo-dest-project" class="form-input">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <div id="mo-eu-wrap" class="form-group">
+        <label><span data-i18n="mi_end_user">End User</span> <span id="mo-eu-req" style="color:red;display:none">*</span></label>
+        <select id="mo-end-user" class="form-input">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <div id="mo-tp-wrap" class="form-group">
+        <label><span data-i18n="mi_third_party">Third Party</span> <span id="mo-tp-req" style="color:red;display:none">*</span></label>
+        <select id="mo-third-party" class="form-input">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label data-i18n="mi_notes">Notes</label>
+        <input type="text" id="mo-notes" class="form-input" placeholder="Optional notes">
+      </div>
+    </div>
+
+    <!-- Available stock picker -->
+    <div id="mo-stock-section" style="display:none;margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <strong data-i18n="mo_avail_stock">Available Stock (click row to add)</strong>
+        <input type="text" id="mo-stock-search" class="form-input" style="width:220px;padding:.3rem .6rem"
+               placeholder="🔍 filter item..." oninput="moFilterStock()">
+      </div>
+      <div style="overflow-x:auto;max-height:240px;border:1px solid #E5E7EB;border-radius:6px">
+        <table class="data-table" style="margin:0">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr style="background:#F3F4F6">
+              <th data-i18n="mo_col_item">Item Code</th>
+              <th data-i18n="mo_col_desc">Description</th>
+              <th data-i18n="mo_col_batch">Batch</th>
+              <th data-i18n="mo_col_exp">Exp Date</th>
+              <th style="text-align:right" data-i18n="mo_col_avail">Available Qty</th>
+            </tr>
+          </thead>
+          <tbody id="mo-stock-body">
+            <tr><td colspan="5" style="text-align:center;color:#9CA3AF;padding:1rem">Select a project to load stock</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OUT Lines table -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <strong>OUT Lines</strong>
+      <button class="btn btn-primary" style="padding:.3rem .8rem;font-size:.85rem" onclick="moAddEmptyLine()" data-i18n="mo_add_empty">+ Add Manual Line</button>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:1rem">
+      <table class="data-table" id="mo-lines-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th data-i18n="mo_col_item">Item Code</th>
+            <th data-i18n="mo_col_desc">Description</th>
+            <th data-i18n="mo_col_batch">Batch</th>
+            <th data-i18n="mo_col_exp">Exp Date</th>
+            <th data-i18n="mo_col_avail">Available</th>
+            <th>OUT Qty <span style="color:red">*</span></th>
+            <th>Unit</th>
+            <th>Weight kg</th>
+            <th>Volume m³</th>
+            <th>Unit Price</th>
+            <th>Currency</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="mo-lines-body">
+          <tr id="mo-empty-row"><td colspan="13" style="text-align:center;color:#9CA3AF;padding:1rem">No lines yet — select items from stock above</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn" style="background:#6B7280;color:#fff" onclick="moSaveDraft()" data-i18n="mo_save_draft">💾 Save Draft</button>
+      <button class="btn" style="background:#16a34a;color:#fff" onclick="moExportCurrent()">📥 Download PL</button>
+      <button class="btn btn-success" onclick="moConfirmDraft()" data-i18n="mo_confirm_btn">✅ Confirm & Close</button>
+    </div>
+    <input type="hidden" id="mo-editing-id" value="">
+  </div>
+
+  <!-- ── Movements List ───────────────────────────────────────── -->
+  <div class="form-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <h3 data-i18n="mo_history">OUT Movements History</h3>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <select id="mo-filter-status" class="form-input" style="width:130px" onchange="moLoadList()">
+          <option value="">All Status</option>
+          <option value="Draft">Draft</option>
+          <option value="Confirmed">Confirmed</option>
+        </select>
+        <select id="mo-filter-type" class="form-input" style="width:180px" onchange="moLoadList()">
+          <option value="">All Types</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="mo_col_doc">Document No</th>
+            <th data-i18n="mo_col_type">Type</th>
+            <th data-i18n="mo_col_date">Date</th>
+            <th data-i18n="mo_col_from">From Project</th>
+            <th data-i18n="mo_col_to">To (Project / End User / 3rd Party)</th>
+            <th data-i18n="mo_col_lines">Lines</th>
+            <th data-i18n="mo_col_weight">Weight kg</th>
+            <th data-i18n="mo_col_status">Status</th>
+            <th data-i18n="actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="mo-list-body">
+          <tr><td colspan="9" style="text-align:center;color:#9CA3AF;padding:2rem">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

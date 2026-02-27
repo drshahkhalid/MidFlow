@@ -1,0 +1,140 @@
+<div class="page-content active">
+  <div class="page-header">
+    <h2 data-i18n="inv_title">🗃️ Inventory</h2>
+    <p style="color:#6B7280" data-i18n="inv_subtitle">Physical count and variance analysis (parcels or items)</p>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:0;border-bottom:2px solid #E5E7EB;margin-bottom:1.5rem">
+    <button id="inv-tab-items"   class="inv-tab inv-tab-active" onclick="invTab('items')"   data-i18n="inv_tab_items">📦 Item Inventory</button>
+    <button id="inv-tab-parcels" class="inv-tab"                onclick="invTab('parcels')" data-i18n="inv_tab_parcels">📫 Parcel Inventory</button>
+    <button id="inv-tab-history" class="inv-tab"                onclick="invTab('history')" data-i18n="inv_tab_history">📋 Count History</button>
+  </div>
+
+  <style>
+    .inv-tab { padding:.6rem 1.2rem;border:none;background:none;cursor:pointer;font-size:.95rem;color:#6B7280;border-bottom:3px solid transparent;margin-bottom:-2px }
+    .inv-tab-active { color:#1F3A8A;border-bottom-color:#1F3A8A;font-weight:600 }
+    .variance-neg { background:#FFCCCC !important }
+    .variance-pos { background:#CCFFCC !important }
+  </style>
+
+  <!-- ── Item Inventory tab ────────────────────────────────────── -->
+  <div id="inv-panel-items">
+    <div class="form-card">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem">
+        <div class="form-group" style="margin:0;min-width:160px">
+          <label data-i18n="rpt_project">Project</label>
+          <select id="inv-items-project" class="form-input">
+            <option value="" data-i18n="all_projects">All Projects</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="invLoadItems()" data-i18n="inv_load_stock">🔄 Load System Stock</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="invExportBlankItems()" data-i18n="inv_export_sheet">📥 Export Count Sheet</button>
+        <button class="btn btn-success" onclick="invSaveItemCount()" id="inv-items-save" style="display:none" data-i18n="inv_save_count">💾 Save Count</button>
+      </div>
+      <div id="inv-items-info" style="margin-bottom:.5rem;color:#6B7280;font-size:.9rem"></div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="rpt_project">Project</th>
+              <th data-i18n="rpt_ss_col_item">Item Code</th>
+              <th data-i18n="rpt_ss_col_desc">Description</th>
+              <th data-i18n="rpt_ss_col_batch">Batch</th>
+              <th data-i18n="rpt_ss_col_exp">Exp Date</th>
+              <th>Parcel No</th>
+              <th>Pallet</th>
+              <th style="text-align:right" data-i18n="inv_system_qty">System Qty</th>
+              <th style="text-align:right" data-i18n="inv_physical_qty">Physical Qty</th>
+              <th style="text-align:right" data-i18n="inv_variance">Variance</th>
+              <th data-i18n="mi_notes">Notes</th>
+            </tr>
+          </thead>
+          <tbody id="inv-items-body">
+            <tr><td colspan="11" style="text-align:center;color:#9CA3AF;padding:2rem">Select a project and click "Load System Stock"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Parcel Inventory tab ─────────────────────────────────── -->
+  <div id="inv-panel-parcels" style="display:none">
+    <div class="form-card">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem">
+        <div class="form-group" style="margin:0;min-width:160px">
+          <label data-i18n="rpt_project">Project</label>
+          <select id="inv-parcels-project" class="form-input">
+            <option value="" data-i18n="all_projects">All Projects</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="invLoadParcels()" data-i18n="inv_load_parcels">🔄 Load Parcels</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="invExportBlankParcels()" data-i18n="inv_export_sheet">📥 Export Count Sheet</button>
+        <button class="btn btn-success" onclick="invSaveParcelCount()" id="inv-parcels-save" style="display:none" data-i18n="inv_save_count">💾 Save Count</button>
+      </div>
+      <!-- Barcode scanner (shown after parcels load) -->
+      <div id="inv-parcel-scanner" style="display:none;background:#F0FDF4;border:2px solid #16a34a;border-radius:8px;padding:1rem;margin-bottom:1rem">
+        <div style="display:flex;gap:.75rem;align-items:center">
+          <span style="font-size:1.5rem">📷</span>
+          <div style="flex:1">
+            <label style="font-weight:600">Scan Parcel Barcode</label>
+            <input type="text" id="inv-parcel-barcode" class="form-input"
+                   placeholder="Scan or type parcel number..." oninput="invParcelScan()"
+                   autocomplete="off" style="margin-top:.25rem">
+          </div>
+          <div id="inv-scan-result" style="min-width:140px;text-align:center;font-size:.9rem"></div>
+        </div>
+        <div style="margin-top:.5rem;font-size:.85rem;color:#6B7280">Scan to auto-mark present. Keep focus here — no mouse needed.</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Parcel No</th>
+              <th>Packing Ref</th>
+              <th data-i18n="rpt_project">Project</th>
+              <th>Pallet</th>
+              <th style="text-align:right">Items</th>
+              <th style="text-align:right">Weight kg</th>
+              <th>Received At</th>
+              <th data-i18n="inv_present">Present?</th>
+              <th data-i18n="mi_notes">Notes</th>
+            </tr>
+          </thead>
+          <tbody id="inv-parcels-body">
+            <tr><td colspan="9" style="text-align:center;color:#9CA3AF;padding:2rem">Select a project and click "Load Parcels"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Count History tab ────────────────────────────────────── -->
+  <div id="inv-panel-history" style="display:none">
+    <div class="form-card">
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-primary" onclick="invLoadHistory()" data-i18n="rpt_load">🔄 Refresh</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="mi_col_date">Date</th>
+              <th data-i18n="rpt_project">Project</th>
+              <th data-i18n="mi_col_type">Type</th>
+              <th data-i18n="mi_col_status">Status</th>
+              <th style="text-align:right" data-i18n="lines">Lines</th>
+              <th style="text-align:right" data-i18n="inv_variance">Total Variance</th>
+              <th>By</th>
+              <th data-i18n="actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inv-history-body">
+            <tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:2rem">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+

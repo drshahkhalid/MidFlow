@@ -24,55 +24,52 @@
                     </h4>
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>
+                            <label for="mission-name">
                                 <span data-i18n="mission_name">Mission Name</span>
                                 <span style="color: red;">*</span>
                             </label>
-                            <input type="text" id="mission-name" required maxlength="200"
+                            <input type="text" id="mission-name" autocomplete="organization" required maxlength="100"
                                 data-i18n-placeholder="mission_name_placeholder">
-                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="mission_name_hint">Full
-                                mission name</small>
+                            <small data-i18n="mission_name_hint">Full mission name</small>
                         </div>
+
                         <div class="form-group">
-                            <label>
+                            <label for="mission-abbreviation">
                                 <span data-i18n="mission_abbreviation">Mission Abbreviation</span>
                                 <span style="color: red;">*</span>
                             </label>
-                            <input type="text" id="mission-abbreviation" required maxlength="20"
+                            <input type="text" id="mission-abbreviation" autocomplete="off" required maxlength="10"
                                 data-i18n-placeholder="mission_abbr_placeholder">
-                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="mission_abbr_hint">Short code
-                                (auto-uppercase)</small>
+                            <small data-i18n="mission_abbr_hint">Short code (auto-uppercase)</small>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Order Related Settings -->
-                <div
-                    style="margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 8px; border: 1px solid #E5E7EB;">
-                    <h4 style="color: #1F3A8A; margin-bottom: 1rem;">
-                        📦 <span data-i18n="order_related_settings">Order Related Settings</span>
-                    </h4>
-                    <div class="form-grid">
                         <div class="form-group">
-                            <label data-i18n="lead_time_months">Lead Time (months)</label>
-                            <input type="number" id="lead-time" min="0" max="36" value="0" placeholder="0">
-                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="lead_time_hint">Time from
-                                order to delivery (0-36)</small>
+                            <label for="lead-time">
+                                <span data-i18n="lead_time_months">Lead Time (months)</span>
+                                <span style="color: red;">*</span>
+                            </label>
+                            <input type="number" id="lead-time" autocomplete="off" required min="0" max="36" value="0">
+                            <small data-i18n="lead_time_hint">Time from order to delivery (0-36)</small>
                         </div>
+
                         <div class="form-group">
-                            <label>
+                            <label for="cover-period">
                                 <span data-i18n="cover_period_months">Cover Period (months)</span>
                                 <span style="color: red;">*</span>
                             </label>
-                            <input type="number" id="cover-period" min="0" max="36" required placeholder="12">
-                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="cover_period_hint">Mission
-                                duration (0-36)</small>
+                            <input type="number" id="cover-period" autocomplete="off" required min="0" max="36"
+                                value="0">
+                            <small data-i18n="cover_period_hint">Mission duration (0-36)</small>
                         </div>
+
                         <div class="form-group">
-                            <label data-i18n="security_stock_months">Security Stock (months)</label>
-                            <input type="number" id="security-stock" min="0" max="36" value="0" placeholder="0">
-                            <small style="color: #6B7280; font-size: 0.85rem;" data-i18n="security_stock_hint">Buffer
-                                stock duration (0-36)</small>
+                            <label for="security-stock">
+                                <span data-i18n="security_stock_months">Security Stock (months)</span>
+                                <span style="color: red;">*</span>
+                            </label>
+                            <input type="number" id="security-stock" autocomplete="off" required min="0" max="36"
+                                value="0">
+                            <small data-i18n="security_stock_hint">Buffer stock duration (0-36)</small>
                         </div>
                     </div>
                 </div>

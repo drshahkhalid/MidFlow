@@ -1,0 +1,644 @@
+<div class="page-content active" id="cr-page">
+
+  <!-- ══ Page Header ══════════════════════════════════════════ -->
+  <div class="page-header" style="margin-bottom:1rem;padding-bottom:0.75rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+      <div>
+        <h2 style="font-size:1.5rem;color:var(--primary-dark-blue);">
+          📦 <span data-i18n="cr_title">Cargo Reception</span>
+        </h2>
+        <p style="font-size:0.85rem;color:#6B7280;" data-i18n="cr_subtitle">
+          Receive international &amp; local cargo — scan barcodes, manage pallets
+        </p>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+        <span id="cr-reception-number-badge"
+          style="background:linear-gradient(135deg,var(--primary-dark-blue),var(--mid-blue));
+            color:#fff;padding:0.3rem 0.9rem;border-radius:20px;font-size:0.82rem;font-weight:700;
+            letter-spacing:0.5px;display:none;">
+          📋 <span id="cr-next-recep-num">—</span>
+        </span>
+        <button class="btn btn-sm" onclick="crClearSession()"
+          style="background:#6B7280;color:#fff;font-size:0.82rem;">
+          🗑 <span data-i18n="cr_btn_clear_session">Clear Session</span>
+        </button>
+        <button class="btn btn-sm btn-primary" onclick="crLoadData()">
+          🔄 <span data-i18n="cr_btn_refresh">Refresh</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Stat Cards ════════════════════════════════════════════ -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin-bottom:1rem;">
+    <div class="stat-card" style="padding:0.75rem;gap:0.6rem;">
+      <div class="stat-icon" style="font-size:1.1rem;width:36px;height:36px;min-width:36px;">📦</div>
+      <div class="stat-info">
+        <h3 id="cr-stat-total" style="font-size:1.3rem;color:var(--primary-dark-blue);">0</h3>
+        <p style="font-size:0.72rem;" data-i18n="cr_stat_total">Total Parcels</p>
+      </div>
+    </div>
+    <div class="stat-card" style="padding:0.75rem;gap:0.6rem;">
+      <div class="stat-icon" style="font-size:1.1rem;width:36px;height:36px;min-width:36px;
+        background:linear-gradient(135deg,#F59E0B,#D97706);">⏳</div>
+      <div class="stat-info">
+        <h3 id="cr-stat-pending" style="font-size:1.3rem;color:var(--primary-dark-blue);">0</h3>
+        <p style="font-size:0.72rem;" data-i18n="cr_stat_pending">Pending</p>
+      </div>
+    </div>
+    <div class="stat-card" style="padding:0.75rem;gap:0.6rem;">
+      <div class="stat-icon" style="font-size:1.1rem;width:36px;height:36px;min-width:36px;
+        background:linear-gradient(135deg,var(--green-flow),#38a169);">✅</div>
+      <div class="stat-info">
+        <h3 id="cr-stat-received" style="font-size:1.3rem;color:var(--primary-dark-blue);">0</h3>
+        <p style="font-size:0.72rem;" data-i18n="cr_stat_received">Received</p>
+      </div>
+    </div>
+    <div class="stat-card" style="padding:0.75rem;gap:0.6rem;">
+      <div class="stat-icon" style="font-size:1.1rem;width:36px;height:36px;min-width:36px;
+        background:linear-gradient(135deg,#0EA5E9,#0284C7);">⚖️</div>
+      <div class="stat-info">
+        <h3 id="cr-stat-weight" style="font-size:1.1rem;color:var(--primary-dark-blue);">0 kg</h3>
+        <p style="font-size:0.72rem;" data-i18n="cr_stat_weight">Weight Rcvd</p>
+      </div>
+    </div>
+    <div class="stat-card" style="padding:0.75rem;gap:0.6rem;">
+      <div class="stat-icon" style="font-size:1.1rem;width:36px;height:36px;min-width:36px;
+        background:linear-gradient(135deg,#8B5CF6,#6D28D9);">🎯</div>
+      <div class="stat-info">
+        <h3 id="cr-stat-pallet" style="font-size:1.1rem;color:var(--primary-dark-blue);">—</h3>
+        <p style="font-size:0.72rem;" data-i18n="cr_stat_pallet">Current Pallet</p>
+      </div>
+    </div>
+    <!-- Local Orders compact card -->
+    <div class="stat-card" style="padding:0.75rem;gap:0.6rem;">
+      <div class="stat-icon" style="font-size:1.1rem;width:36px;height:36px;min-width:36px;
+        background:linear-gradient(135deg,#0EA5E9,#0369A1);">🏠</div>
+      <div class="stat-info" style="flex:1;min-width:0">
+        <p style="font-size:0.68rem;color:#6B7280;margin-bottom:0.2rem;font-weight:600;" data-i18n="cr_stat_local">Local Orders</p>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;line-height:1.3">
+          <span style="font-size:0.75rem;color:#374151;white-space:nowrap">📋 <strong id="cr-stat-lo-total">0</strong></span>
+          <span style="font-size:0.75rem;color:#065F46;white-space:nowrap">✅ <strong id="cr-stat-lo-full">0</strong></span>
+          <span style="font-size:0.75rem;color:#D97706;white-space:nowrap">⚡ <strong id="cr-stat-lo-partial">0</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Mode Tabs ═════════════════════════════════════════════ -->
+  <div style="display:flex;gap:0;border-bottom:3px solid var(--cyan-flow);margin-bottom:1rem;">
+    <button id="cr-tab-intl" onclick="crSwitchMode('international')"
+      style="padding:0.55rem 1.4rem;border:none;cursor:pointer;border-radius:6px 6px 0 0;
+        font-weight:600;font-size:0.88rem;transition:all .2s;
+        background:linear-gradient(135deg,var(--primary-dark-blue),var(--mid-blue));color:#fff;">
+      🌍 <span data-i18n="cr_tab_international">International Order</span>
+    </button>
+    <button id="cr-tab-local" onclick="crSwitchMode('local')"
+      style="padding:0.55rem 1.4rem;border:none;cursor:pointer;border-radius:6px 6px 0 0;
+        font-weight:500;font-size:0.88rem;transition:all .2s;margin-left:4px;
+        background:#F3F4F6;color:#6B7280;">
+      🏠 <span data-i18n="cr_tab_local">Local Order</span>
+    </button>
+  </div>
+
+  <!-- ══ SHARED: Pallet Banner ════════════════════════════════ -->
+  <div id="cr-pallet-banner"
+    style="background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:2px solid #DDD6FE;
+      border-radius:8px;padding:0.6rem 1rem;margin-bottom:0.8rem;
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+    <div style="display:flex;align-items:center;gap:0.8rem;">
+      <span style="font-size:1.3rem;">🎯</span>
+      <span style="font-weight:700;color:#5B21B6;font-size:0.95rem;">
+        <span data-i18n="cr_pallet_current">Current Pallet</span>: <span id="cr-current-pallet-display" data-i18n-fallback="cr_pallet_none">None</span>
+      </span>
+      <span id="cr-pallet-count" style="background:#8B5CF6;color:#fff;
+        border-radius:12px;padding:0.1rem 0.55rem;font-size:0.75rem;font-weight:600;display:none;"></span>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="btn btn-sm" onclick="crStartNewPallet()"
+        style="background:linear-gradient(135deg,#8B5CF6,#6D28D9);color:#fff;font-size:0.8rem;">
+        <span data-i18n="cr_btn_new_pallet">+ New Pallet</span>
+      </button>
+      <button class="btn btn-sm" onclick="crClosePallet()"
+        style="background:#6B7280;color:#fff;font-size:0.8rem;" id="cr-close-pallet-btn" disabled>
+        <span data-i18n="cr_btn_close_pallet">✓ Close Pallet</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ SHARED: Barcode Scanner ══════════════════════════════ -->
+  <div id="cr-scanner-card" class="form-card" style="padding:1rem;margin-bottom:0.8rem;
+    border-left:4px solid var(--cyan-flow);">
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:0.2rem;flex:1;min-width:240px;">
+        <label style="font-size:0.78rem;font-weight:700;color:var(--primary-dark-blue);
+          text-transform:uppercase;letter-spacing:0.5px;"
+          data-i18n="cr_scan_label">
+          🔍 Scan or Type Parcel Number
+        </label>
+        <div style="display:flex;gap:0.5rem;">
+          <input type="text" id="cr-barcode-input" autocomplete="off" autocorrect="off"
+            data-i18n-placeholder="cr_scan_placeholder"
+            placeholder="Scan barcode or type parcel number…"
+            onkeydown="if(event.key==='Enter') crProcessScan()"
+            style="flex:1;padding:0.6rem 0.9rem;border:2px solid var(--border-light);
+              border-radius:6px;font-size:1rem;font-family:monospace;
+              background:white;color:var(--text-dark);
+              transition:border-color .2s;">
+          <button class="btn btn-primary btn-sm" onclick="crProcessScan()"
+            style="white-space:nowrap;">
+            <span data-i18n="cr_btn_process">▶ Process</span>
+          </button>
+        </div>
+      </div>
+      <!-- Scan feedback -->
+      <div id="cr-scan-feedback" style="min-width:120px;text-align:center;">
+        <div id="cr-scan-icon" style="font-size:2.5rem;line-height:1;">—</div>
+        <div id="cr-scan-msg" style="font-size:0.75rem;color:#6B7280;margin-top:0.2rem;font-weight:600;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       INTERNATIONAL ORDER SECTION  (upload only)
+       ══════════════════════════════════════════════════════════ -->
+  <div id="cr-intl-section">
+
+    <!-- ── Upload Step (collapsible) ────────────────────────── -->
+    <div class="form-card" style="padding:1rem;margin-bottom:0.8rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;"
+        onclick="crToggleUpload()">
+        <h3 style="margin:0;font-size:0.95rem;color:var(--primary-dark-blue);">
+          📁 <span data-i18n="cr_upload_title">Upload Cargo Data</span>
+          <span id="cr-upload-status-badge" style="display:none;background:#D1FAE5;color:#065F46;
+            border-radius:10px;padding:0.1rem 0.55rem;font-size:0.75rem;font-weight:600;margin-left:8px;"
+            data-i18n="cr_upload_loaded">
+            ✓ Data Loaded
+          </span>
+        </h3>
+        <span id="cr-upload-arrow" style="font-size:0.85rem;color:#6B7280;transition:transform .3s;">▼</span>
+      </div>
+
+      <div id="cr-upload-body" style="margin-top:0.9rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+          <!-- Cargo Summary Upload -->
+          <div>
+            <div style="font-weight:700;font-size:0.82rem;color:var(--primary-dark-blue);
+              text-transform:uppercase;letter-spacing:0.4px;margin-bottom:0.4rem;">
+              📋 <span data-i18n="cr_upload_cargo_summary">Cargo Summary</span>
+              <span id="cr-cs-badge" style="display:none;background:#DBEAFE;color:#1E40AF;
+                border-radius:10px;padding:0.1rem 0.45rem;font-size:0.72rem;font-weight:600;margin-left:4px;"></span>
+            </div>
+            <div id="cr-cs-drop"
+              ondragover="crDragOver(event,'cr-cs-drop')" ondragleave="crDragLeave('cr-cs-drop')"
+              ondrop="crDropFile(event,'summary')"
+              onclick="document.getElementById('cr-cs-file').click()"
+              style="border:2px dashed var(--border-light);border-radius:8px;padding:1rem;
+                text-align:center;cursor:pointer;transition:all .2s;background:#F9FAFB;">
+              <div style="font-size:1.8rem;">📊</div>
+              <div style="font-size:0.78rem;color:#6B7280;margin-top:0.25rem;"
+                data-i18n="cr_upload_drop_summary">
+                Drop <strong>Cargo Summary</strong> Excel here<br>or click to browse
+              </div>
+            </div>
+            <input type="file" id="cr-cs-file" accept=".xlsx,.xls" style="display:none"
+              onchange="crHandleFile(event,'summary')">
+            <div id="cr-cs-status" style="margin-top:0.35rem;font-size:0.78rem;min-height:1.4rem;"></div>
+          </div>
+
+          <!-- Packing List Upload -->
+          <div>
+            <div style="font-weight:700;font-size:0.82rem;color:var(--primary-dark-blue);
+              text-transform:uppercase;letter-spacing:0.4px;margin-bottom:0.4rem;">
+              📦 <span data-i18n="cr_upload_packing_list">Packing List</span>
+              <span id="cr-pl-badge" style="display:none;background:#D1FAE5;color:#065F46;
+                border-radius:10px;padding:0.1rem 0.45rem;font-size:0.72rem;font-weight:600;margin-left:4px;"></span>
+            </div>
+            <div id="cr-pl-drop"
+              ondragover="crDragOver(event,'cr-pl-drop')" ondragleave="crDragLeave('cr-pl-drop')"
+              ondrop="crDropFile(event,'packing')"
+              onclick="document.getElementById('cr-pl-file').click()"
+              style="border:2px dashed var(--border-light);border-radius:8px;padding:1rem;
+                text-align:center;cursor:pointer;transition:all .2s;background:#F9FAFB;">
+              <div style="font-size:1.8rem;">📦</div>
+              <div style="font-size:0.78rem;color:#6B7280;margin-top:0.25rem;"
+                data-i18n="cr_upload_drop_packing">
+                Drop <strong>Packing List</strong> Excel here<br>or click to browse
+              </div>
+            </div>
+            <input type="file" id="cr-pl-file" accept=".xlsx,.xls" style="display:none"
+              onchange="crHandleFile(event,'packing')">
+            <div id="cr-pl-status" style="margin-top:0.35rem;font-size:0.78rem;min-height:1.4rem;"></div>
+          </div>
+        </div>
+
+        <!-- Merge button (shown after both are loaded) -->
+        <div id="cr-merge-row" style="display:none;margin-top:0.75rem;
+          padding-top:0.75rem;border-top:1px solid var(--border-light);
+          align-items:center;gap:0.75rem;">
+          <button class="btn btn-success btn-sm" onclick="crMergeTrigger()">
+            <span data-i18n="cr_btn_merge">🔗 Merge &amp; Load Parcels</span>
+          </button>
+          <span id="cr-merge-status" style="font-size:0.8rem;color:#6B7280;"></span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /intl section -->
+
+  <!-- ══════════════════════════════════════════════════════════
+       LOCAL ORDER SECTION  (order_lines from DB)
+       ══════════════════════════════════════════════════════════ -->
+  <div id="cr-local-section" style="display:none;">
+
+    <div class="form-card" style="padding:1rem;margin-bottom:0.8rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+        <div>
+          <h3 style="margin:0;font-size:0.95rem;color:var(--primary-dark-blue);">
+            🏠 <span data-i18n="cr_local_title">Local Order Lines</span>
+          </h3>
+          <p style="margin:0.2rem 0 0;font-size:0.75rem;color:#6B7280;"
+            data-i18n="cr_local_subtitle">
+            All Local orders from database — receive item by item with partial quantities
+          </p>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+          <input id="cr-local-search" type="text"
+            data-i18n-placeholder="cr_local_search_placeholder"
+            placeholder="🔍 Search order / item…"
+            oninput="crFilterLocalLines()"
+            style="padding:0.32rem 0.65rem;border:2px solid var(--border-light);border-radius:6px;
+              font-size:0.8rem;background:white;color:var(--text-dark);width:175px;">
+          <select id="cr-local-status-filter" onchange="crFilterLocalLines()"
+            style="padding:0.32rem 0.6rem;border:2px solid var(--border-light);border-radius:6px;
+              font-size:0.8rem;background:white;color:var(--text-dark);">
+            <option value="" data-i18n="cr_local_filter_all">All Statuses</option>
+            <option value="Pending" data-i18n="cr_status_pending">Pending</option>
+            <option value="Partial" data-i18n="cr_status_partial">Partial</option>
+            <option value="Fully Received" data-i18n="cr_status_fully_received">Fully Received</option>
+          </select>
+          <button class="btn btn-sm btn-primary" onclick="crLoadLocalLines()">
+            🔄 <span data-i18n="cr_btn_refresh">Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;max-height:420px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.81rem;" id="cr-local-lines-table">
+          <thead>
+            <tr style="background:linear-gradient(135deg,var(--primary-dark-blue),var(--mid-blue));
+              color:#fff;position:sticky;top:0;z-index:2;">
+              <th style="padding:0.45rem 0.6rem;text-align:left;font-weight:600;white-space:nowrap;"
+                data-i18n="cr_local_col_order">Order #</th>
+              <th style="padding:0.45rem 0.5rem;text-align:center;font-weight:600;"
+                data-i18n="cr_local_col_line">Line</th>
+              <th style="padding:0.45rem 0.6rem;text-align:left;font-weight:600;"
+                data-i18n="cr_local_col_item_code">Item Code</th>
+              <th style="padding:0.45rem 0.6rem;text-align:left;font-weight:600;min-width:160px;"
+                data-i18n="cr_local_col_description">Description</th>
+              <th style="padding:0.45rem 0.6rem;text-align:left;font-weight:600;"
+                data-i18n="cr_local_col_project">Project</th>
+              <th style="padding:0.45rem 0.6rem;text-align:right;font-weight:600;"
+                data-i18n="cr_local_col_qty_ordered">Qty Ordered</th>
+              <th style="padding:0.45rem 0.6rem;text-align:right;font-weight:600;"
+                data-i18n="cr_local_col_qty_received">Qty Rcvd</th>
+              <th style="padding:0.45rem 0.6rem;text-align:right;font-weight:600;"
+                data-i18n="cr_local_col_balance">Balance</th>
+              <th style="padding:0.45rem 0.6rem;text-align:left;font-weight:600;"
+                data-i18n="cr_local_col_batch">Batch #</th>
+              <th style="padding:0.45rem 0.6rem;text-align:left;font-weight:600;"
+                data-i18n="cr_local_col_expiry">Expiry</th>
+              <th style="padding:0.45rem 0.7rem;text-align:center;font-weight:600;"
+                data-i18n="cr_local_col_status">Status</th>
+              <th style="padding:0.45rem 0.7rem;text-align:center;font-weight:600;"
+                data-i18n="cr_local_col_action">Action</th>
+            </tr>
+          </thead>
+          <tbody id="cr-local-lines-tbody">
+            <tr id="cr-local-lines-empty">
+              <td colspan="12" style="text-align:center;padding:2rem;color:#6B7280;"
+                data-i18n="cr_local_empty">
+                Loading local order lines…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="cr-local-lines-status" style="margin-top:0.5rem;font-size:0.78rem;color:#6B7280;min-height:1.2rem;"></div>
+    </div>
+
+  </div><!-- /local section -->
+
+  <!-- ══ SHARED: Receive Parcels Table (International only) ══ -->
+  <div id="cr-receive-section" class="form-card" style="padding:1rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+      <h3 style="margin:0;font-size:0.95rem;color:var(--primary-dark-blue);">
+        ✅ <span data-i18n="cr_receive_title">Receive Parcels</span>
+      </h3>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <input id="cr-search-parcel" type="text"
+          data-i18n-placeholder="cr_receive_search_placeholder"
+          placeholder="🔍 Search parcel / order…"
+          oninput="crFilterParcels()"
+          style="padding:0.35rem 0.7rem;border:2px solid var(--border-light);border-radius:6px;
+            font-size:0.8rem;background:white;color:var(--text-dark);width:185px;">
+        <select id="cr-status-filter" onchange="crFilterParcels()"
+          style="padding:0.35rem 0.6rem;border:2px solid var(--border-light);border-radius:6px;
+            font-size:0.8rem;background:white;color:var(--text-dark);">
+          <option value="" data-i18n="cr_receive_all_statuses">All Statuses</option>
+          <option value="Pending" data-i18n="cr_status_pending">Pending</option>
+          <option value="Received" data-i18n="cr_status_received">Received</option>
+        </select>
+        <select id="cr-type-filter" onchange="crFilterParcels()"
+          style="padding:0.35rem 0.6rem;border:2px solid var(--border-light);border-radius:6px;
+            font-size:0.8rem;background:white;color:var(--text-dark);">
+          <option value="" data-i18n="cr_receive_all_types">All Types</option>
+          <option value="International" data-i18n="cr_badge_intl">International</option>
+          <option value="Local" data-i18n="cr_badge_local">Local</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;max-height:460px;overflow-y:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;" id="cr-receive-table">
+        <thead>
+          <tr style="background:linear-gradient(135deg,var(--primary-dark-blue),var(--mid-blue));
+            color:#fff;position:sticky;top:0;z-index:2;">
+            <th style="padding:0.5rem 0.5rem;text-align:center;font-weight:600;"
+              data-i18n="cr_receive_col_type">Type</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_parcel">Parcel #</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_order">Order (Field Ref)</th>
+            <th style="padding:0.5rem 0.6rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_project">Project</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_packing">Packing Ref</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_transport">Transport</th>
+            <th style="padding:0.5rem 0.7rem;text-align:right;font-weight:600;"
+              data-i18n="cr_receive_col_weight">Weight</th>
+            <th style="padding:0.5rem 0.7rem;text-align:right;font-weight:600;"
+              data-i18n="cr_receive_col_volume">Volume</th>
+            <th style="padding:0.5rem 0.7rem;text-align:center;font-weight:600;"
+              data-i18n="cr_receive_col_items">Items</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_pallet">Pallet</th>
+            <th style="padding:0.5rem 0.7rem;text-align:left;font-weight:600;"
+              data-i18n="cr_receive_col_note">Note</th>
+            <th style="padding:0.5rem 0.7rem;text-align:center;font-weight:600;"
+              data-i18n="cr_receive_col_status">Status</th>
+            <th style="padding:0.5rem 0.7rem;text-align:center;font-weight:600;"
+              data-i18n="cr_receive_col_action">Action</th>
+          </tr>
+        </thead>
+        <tbody id="cr-receive-tbody">
+          <tr>
+            <td colspan="13" style="text-align:center;padding:2rem;color:#6B7280;"
+              data-i18n="cr_receive_empty">
+              Upload Cargo Summary + Packing List, or add Local Order rows to see parcels
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ Modals ════════════════════════════════════════════════ -->
+
+  <!-- Items Detail Modal -->
+  <div id="cr-items-modal" style="display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:800px;
+      width:95%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(31,58,138,.25);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+        padding-bottom:0.75rem;border-bottom:2px solid var(--cyan-flow);">
+        <h3 id="cr-items-modal-title" style="margin:0;color:var(--primary-dark-blue);font-size:1rem;"></h3>
+        <button onclick="crCloseItemsModal()"
+          style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6B7280;
+          line-height:1;">✕</button>
+      </div>
+      <div id="cr-items-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Confirm Reception Modal -->
+  <div id="cr-confirm-modal" style="display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:430px;
+      width:95%;box-shadow:0 20px 60px rgba(31,58,138,.25);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+        padding-bottom:0.5rem;border-bottom:2px solid var(--cyan-flow);">
+        <h3 id="cr-confirm-title" style="margin:0;color:var(--primary-dark-blue);font-size:1rem;"></h3>
+        <button onclick="crCloseConfirmModal()"
+          style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6B7280;">✕</button>
+      </div>
+      <p id="cr-confirm-msg" style="margin:0 0 0.8rem;font-size:0.88rem;color:#374151;"></p>
+      <div id="cr-confirm-recep-num"
+        style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;
+          padding:0.4rem 0.75rem;font-size:0.82rem;margin-bottom:0.8rem;display:none;">
+        📋 Reception No.: <strong id="cr-confirm-recep-val" style="color:var(--mid-blue);"></strong>
+      </div>
+      <!-- Expiry date — mandatory -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--primary-dark-blue);
+            display:block;margin-bottom:0.25rem;">
+            📅 <span data-i18n="cr_confirm_exp_date_label">Expiry Date</span>
+            <span style="color:#EF4444;" data-i18n="cr_confirm_exp_required">*</span>
+          </label>
+          <div style="display:flex;gap:0.35rem;">
+            <input type="date" id="cr-confirm-exp-date"
+              oninput="document.getElementById('cr-confirm-exp-na').value='';this.style.background=''"
+              style="flex:1;padding:0.35rem 0.5rem;border:2px solid var(--border-light);
+                border-radius:6px;font-size:0.82rem;">
+            <button type="button" onclick="crConfirmSetNA()"
+              style="padding:0.3rem 0.5rem;border:2px solid #D1D5DB;border-radius:6px;
+                background:#F3F4F6;font-size:0.75rem;cursor:pointer;white-space:nowrap;"
+              data-i18n="cr_confirm_exp_na_btn">N/A</button>
+          </div>
+          <input type="hidden" id="cr-confirm-exp-na">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:600;color:var(--text-dark);
+            display:block;margin-bottom:0.25rem;">
+            🏷 <span data-i18n="cr_confirm_batch_label">Batch #</span>
+            <span style="color:#9CA3AF;font-weight:400;" data-i18n="cr_confirm_batch_optional">(optional)</span>
+          </label>
+          <input type="text" id="cr-confirm-batch-no" placeholder="e.g. LOT-2024-001"
+            style="width:100%;box-sizing:border-box;padding:0.35rem 0.5rem;
+              border:2px solid var(--border-light);border-radius:6px;font-size:0.82rem;">
+        </div>
+      </div>
+      <label style="font-size:0.78rem;font-weight:600;color:var(--text-dark);display:block;margin-bottom:0.25rem;"
+        data-i18n="cr_confirm_notes_label">Notes (optional)</label>
+      <textarea id="cr-confirm-notes" rows="2"
+        style="width:100%;box-sizing:border-box;padding:0.4rem 0.6rem;
+          border:2px solid var(--border-light);border-radius:6px;
+          font-size:0.82rem;resize:vertical;"></textarea>
+      <div id="cr-confirm-exp-error"
+        style="color:#EF4444;font-size:0.77rem;margin-top:0.4rem;display:none;"
+        data-i18n="cr_confirm_exp_error">
+        ⚠️ Expiry date is required — enter a date or click N/A
+      </div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.9rem;justify-content:flex-end;">
+        <button onclick="crCloseConfirmModal()" class="btn btn-sm btn-secondary"
+          data-i18n="cr_confirm_btn_cancel">Cancel</button>
+        <button id="cr-confirm-btn" onclick="crConfirmReceive()" class="btn btn-sm btn-success"
+          data-i18n="cr_confirm_btn_confirm">✅ Confirm Received</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Pallet Modal -->
+  <div id="cr-pallet-modal" style="display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:380px;
+      width:95%;box-shadow:0 20px 60px rgba(31,58,138,.25);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+        padding-bottom:0.5rem;border-bottom:2px solid var(--cyan-flow);">
+        <h3 style="margin:0;color:var(--primary-dark-blue);font-size:1rem;"
+          data-i18n="cr_pallet_modal_title">🎯 Start New Pallet</h3>
+        <button onclick="crClosePalletModal()"
+          style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6B7280;">✕</button>
+      </div>
+      <p style="font-size:0.85rem;color:#6B7280;margin:0 0 0.75rem;"
+        data-i18n="cr_pallet_modal_hint">
+        Enter pallet number or accept the auto-generated one:
+      </p>
+      <input type="text" id="cr-pallet-input"
+        style="width:100%;box-sizing:border-box;padding:0.55rem 0.75rem;
+          border:2px solid var(--border-light);border-radius:6px;font-size:1rem;
+          font-family:monospace;font-weight:700;"
+        onkeydown="if(event.key==='Enter') crConfirmNewPallet()">
+      <div style="display:flex;gap:0.5rem;margin-top:0.9rem;justify-content:flex-end;">
+        <button onclick="crClosePalletModal()" class="btn btn-sm btn-secondary"
+          data-i18n="cr_confirm_btn_cancel">Cancel</button>
+        <button onclick="crConfirmNewPallet()"
+          style="background:linear-gradient(135deg,#8B5CF6,#6D28D9);color:#fff;"
+          class="btn btn-sm" data-i18n="cr_pallet_btn_start">🎯 Start Pallet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receive Line Modal (local order item reception) -->
+  <div id="cr-line-modal" style="display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:480px;
+      width:95%;box-shadow:0 20px 60px rgba(31,58,138,.25);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+        padding-bottom:0.5rem;border-bottom:2px solid var(--cyan-flow);">
+        <h3 style="margin:0;color:var(--primary-dark-blue);font-size:1rem;">
+          🏠 <span data-i18n="cr_line_modal_title">Receive Local Item</span>
+        </h3>
+        <button onclick="crCloseLineModal()"
+          style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6B7280;">✕</button>
+      </div>
+
+      <!-- Item info summary -->
+      <div id="cr-line-info"
+        style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;
+          padding:0.6rem 0.75rem;margin-bottom:0.9rem;font-size:0.83rem;color:#166534;">
+      </div>
+
+      <!-- Qty + balance row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.55rem;margin-bottom:0.75rem;">
+        <div style="background:#F9FAFB;border-radius:6px;padding:0.45rem 0.6rem;text-align:center;">
+          <div style="font-size:0.7rem;color:#6B7280;font-weight:600;text-transform:uppercase;"
+            data-i18n="cr_line_ordered_label">Ordered</div>
+          <div id="cr-line-qty-ordered" style="font-weight:700;color:var(--primary-dark-blue);font-size:0.95rem;">—</div>
+        </div>
+        <div style="background:#FEF3C7;border-radius:6px;padding:0.45rem 0.6rem;text-align:center;">
+          <div style="font-size:0.7rem;color:#92400E;font-weight:600;text-transform:uppercase;"
+            data-i18n="cr_line_prev_label">Already Rcvd</div>
+          <div id="cr-line-qty-prev" style="font-weight:700;color:#B45309;font-size:0.95rem;">—</div>
+        </div>
+        <div style="background:#FEE2E2;border-radius:6px;padding:0.45rem 0.6rem;text-align:center;">
+          <div style="font-size:0.7rem;color:#991B1B;font-weight:600;text-transform:uppercase;"
+            data-i18n="cr_line_balance_label">Balance</div>
+          <div id="cr-line-qty-balance" style="font-weight:700;color:#DC2626;font-size:0.95rem;">—</div>
+        </div>
+      </div>
+
+      <!-- Qty to receive -->
+      <div style="margin-bottom:0.65rem;">
+        <label style="font-size:0.78rem;font-weight:700;color:var(--primary-dark-blue);
+          display:block;margin-bottom:0.25rem;">
+          📦 <span data-i18n="cr_line_qty_label">Quantity to Receive</span>
+          <span style="color:#EF4444;" data-i18n="cr_confirm_exp_required">*</span>
+        </label>
+        <div style="display:flex;gap:0.35rem;">
+          <input type="number" id="cr-line-qty-input" min="0.001" step="any" placeholder="0"
+            style="flex:1;padding:0.4rem 0.6rem;border:2px solid var(--border-light);
+              border-radius:6px;font-size:0.9rem;font-weight:600;">
+          <button type="button" onclick="crLineReceiveAll()"
+            style="padding:0.35rem 0.65rem;border:2px solid #10B981;border-radius:6px;
+              background:#D1FAE5;color:#065F46;font-size:0.78rem;cursor:pointer;white-space:nowrap;
+              font-weight:600;" data-i18n="cr_line_all_btn">All</button>
+        </div>
+      </div>
+
+      <!-- Expiry date — mandatory -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.65rem;">
+        <div>
+          <label style="font-size:0.78rem;font-weight:700;color:var(--primary-dark-blue);
+            display:block;margin-bottom:0.25rem;">
+            📅 <span data-i18n="cr_line_exp_label">Expiry Date</span>
+            <span style="color:#EF4444;" data-i18n="cr_confirm_exp_required">*</span>
+          </label>
+          <div style="display:flex;gap:0.35rem;">
+            <input type="date" id="cr-line-exp-date"
+              oninput="document.getElementById('cr-line-exp-na').value='';this.style.background='';this.placeholder=''"
+              style="flex:1;padding:0.35rem 0.5rem;border:2px solid var(--border-light);
+                border-radius:6px;font-size:0.82rem;">
+            <button type="button" onclick="crLineSetNA()"
+              style="padding:0.3rem 0.5rem;border:2px solid #D1D5DB;border-radius:6px;
+                background:#F3F4F6;font-size:0.75rem;cursor:pointer;white-space:nowrap;"
+              data-i18n="cr_confirm_exp_na_btn">N/A</button>
+          </div>
+          <input type="hidden" id="cr-line-exp-na">
+        </div>
+        <div>
+          <label style="font-size:0.78rem;font-weight:600;color:var(--text-dark);
+            display:block;margin-bottom:0.25rem;">
+            🏷 <span data-i18n="cr_line_batch_label">Batch #</span>
+            <span style="color:#9CA3AF;font-weight:400;" data-i18n="cr_confirm_batch_optional">(optional)</span>
+          </label>
+          <input type="text" id="cr-line-batch-no" placeholder="e.g. LOT-2024-001"
+            style="width:100%;box-sizing:border-box;padding:0.35rem 0.5rem;
+              border:2px solid var(--border-light);border-radius:6px;font-size:0.82rem;">
+        </div>
+      </div>
+
+      <div id="cr-line-error"
+        style="color:#EF4444;font-size:0.77rem;margin-bottom:0.5rem;display:none;">
+      </div>
+
+      <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+        <button onclick="crCloseLineModal()" class="btn btn-sm btn-secondary"
+          data-i18n="cr_line_btn_cancel">Cancel</button>
+        <button onclick="crConfirmReceiveLine()" class="btn btn-sm btn-success"
+          id="cr-line-confirm-btn" data-i18n="cr_line_btn_receive">✅ Receive</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Modal (cargo summary / packing list data) -->
+  <div id="cr-preview-modal" style="display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:1.5rem;max-width:960px;
+      width:98%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(31,58,138,.25);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;
+        padding-bottom:0.75rem;border-bottom:2px solid var(--cyan-flow);">
+        <h3 id="cr-preview-title" style="margin:0;color:var(--primary-dark-blue);font-size:1rem;"></h3>
+        <button onclick="crClosePreview()"
+          style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6B7280;">✕</button>
+      </div>
+      <div id="cr-preview-body"></div>
+    </div>
+  </div>
+
+</div><!-- /cr-page -->

@@ -56,28 +56,29 @@
                 <input type="hidden" id="project-id">
 
                 <div class="form-group">
-                    <label>
+                    <label for="project-name">
                         <span data-i18n="project_name">Project Name</span>
                         <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="project-name" required maxlength="200"
+                    <input type="text" id="project-name" autocomplete="off" required maxlength="100"
                         data-i18n-placeholder="project_name_placeholder">
                 </div>
 
                 <div class="form-group">
-                    <label>
+                    <label for="project-code">
                         <span data-i18n="project_code">Project Code</span>
                         <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="project-code" required maxlength="50"
-                        data-i18n-placeholder="project_code_placeholder" style="text-transform: uppercase;">
-                    <small style="color: #6B7280;" data-i18n="project_code_hint">Unique identifier
-                        (auto-uppercase)</small>
+                    <input type="text" id="project-code" autocomplete="off" required maxlength="20"
+                        data-i18n-placeholder="project_code_placeholder">
+                    <small data-i18n="project_code_hint">Unique identifier (auto-uppercase)</small>
                 </div>
 
                 <div class="form-group">
-                    <label data-i18n="description">Description</label>
-                    <textarea id="project-description" rows="3" maxlength="500"
+                    <label for="project-description">
+                        <span data-i18n="description">Description</span>
+                    </label>
+                    <textarea id="project-description" autocomplete="off" rows="3" maxlength="500"
                         data-i18n-placeholder="project_description_placeholder"></textarea>
                 </div>
 

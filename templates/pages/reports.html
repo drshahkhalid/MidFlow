@@ -1,0 +1,162 @@
+<div class="page-content active">
+  <div class="page-header">
+    <h2 data-i18n="rpt_title">📊 Stock Reports</h2>
+    <p style="color:#6B7280" data-i18n="rpt_subtitle">Stock summary, stock card, and transaction history</p>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:0;border-bottom:2px solid #E5E7EB;margin-bottom:1.5rem">
+    <button id="rpt-tab-summary"      class="rpt-tab rpt-tab-active" onclick="rptTab('summary')"      data-i18n="rpt_tab_summary">📦 Stock Summary</button>
+    <button id="rpt-tab-card"         class="rpt-tab"                onclick="rptTab('card')"         data-i18n="rpt_tab_card">📋 Stock Card</button>
+    <button id="rpt-tab-transactions" class="rpt-tab"                onclick="rptTab('transactions')" data-i18n="rpt_tab_tx">🔄 Transactions</button>
+  </div>
+
+  <style>
+    .rpt-tab { padding:.6rem 1.2rem;border:none;background:none;cursor:pointer;font-size:.95rem;color:#6B7280;border-bottom:3px solid transparent;margin-bottom:-2px }
+    .rpt-tab-active { color:#1F3A8A;border-bottom-color:#1F3A8A;font-weight:600 }
+  </style>
+
+  <!-- ── Stock Summary tab ────────────────────────────────────── -->
+  <div id="rpt-panel-summary">
+    <div class="form-card">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem">
+        <div class="form-group" style="margin:0;min-width:160px">
+          <label data-i18n="rpt_project">Project</label>
+          <select id="rpt-ss-project" class="form-input" onchange="rptLoadSummary()">
+            <option value="" data-i18n="all_projects">All Projects</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;min-width:200px">
+          <label data-i18n="rpt_item_filter">Item Code / Description</label>
+          <input type="text" id="rpt-ss-item" class="form-input" placeholder="Filter by item..." oninput="rptLoadSummary()">
+        </div>
+        <button class="btn btn-primary" onclick="rptLoadSummary()" data-i18n="rpt_load">🔄 Refresh</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="rptExportSummary()" data-i18n="rpt_export">📥 Export Excel</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="rpt_ss_col_project">Project</th>
+              <th data-i18n="rpt_ss_col_item">Item Code</th>
+              <th data-i18n="rpt_ss_col_desc">Description</th>
+              <th data-i18n="rpt_ss_col_batch">Batch</th>
+              <th data-i18n="rpt_ss_col_exp">Exp Date</th>
+              <th style="text-align:right" data-i18n="rpt_ss_col_in">Total IN</th>
+              <th style="text-align:right" data-i18n="rpt_ss_col_out">Total OUT</th>
+              <th style="text-align:right" data-i18n="rpt_ss_col_stock">Net Stock</th>
+            </tr>
+          </thead>
+          <tbody id="rpt-ss-body">
+            <tr><td colspan="8" style="text-align:center;color:#9CA3AF;padding:2rem">Select filters and click Refresh</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="rpt-ss-footer" style="margin-top:.5rem;color:#6B7280;font-size:.9rem"></div>
+    </div>
+  </div>
+
+  <!-- ── Stock Card tab ───────────────────────────────────────── -->
+  <div id="rpt-panel-card" style="display:none">
+    <div class="form-card">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem">
+        <div class="form-group" style="margin:0;min-width:180px">
+          <label><span data-i18n="rpt_sc_item">Item Code</span> <span style="color:red">*</span></label>
+          <input type="text" id="rpt-sc-item" class="form-input" placeholder="e.g. MED001" onkeydown="if(event.key==='Enter')rptLoadCard()">
+        </div>
+        <div class="form-group" style="margin:0;min-width:160px">
+          <label data-i18n="rpt_project">Project</label>
+          <select id="rpt-sc-project" class="form-input">
+            <option value="" data-i18n="all_projects">All Projects</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="rptLoadCard()" data-i18n="rpt_sc_load">🔍 Load Card</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="rptExportCard()" data-i18n="rpt_export">📥 Export Excel</button>
+      </div>
+      <div id="rpt-sc-info" style="margin-bottom:.5rem;color:#6B7280;font-size:.9rem"></div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="mi_col_date">Date</th>
+              <th data-i18n="mi_col_type">Type</th>
+              <th data-i18n="mi_col_doc">Document No</th>
+              <th data-i18n="rpt_project">Project</th>
+              <th data-i18n="rpt_ss_col_batch">Batch</th>
+              <th data-i18n="rpt_ss_col_exp">Exp Date</th>
+              <th style="text-align:right" data-i18n="rpt_ss_col_in">IN Qty</th>
+              <th style="text-align:right" data-i18n="rpt_ss_col_out">OUT Qty</th>
+              <th style="text-align:right">Balance</th>
+              <th>User</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="rpt-sc-body">
+            <tr><td colspan="11" style="text-align:center;color:#9CA3AF;padding:2rem">Enter an item code and click "Load Card"</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Transactions tab ─────────────────────────────────────── -->
+  <div id="rpt-panel-transactions" style="display:none">
+    <div class="form-card">
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem">
+        <div class="form-group" style="margin:0;min-width:140px">
+          <label data-i18n="rpt_project">Project</label>
+          <select id="rpt-tx-project" class="form-input">
+            <option value="" data-i18n="all_projects">All Projects</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;min-width:110px">
+          <label data-i18n="rpt_tx_direction">Direction</label>
+          <select id="rpt-tx-direction" class="form-input">
+            <option value="" data-i18n="rpt_tx_all_dir">All</option>
+            <option value="IN" data-i18n="rpt_tx_in">IN</option>
+            <option value="OUT" data-i18n="rpt_tx_out">OUT</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;min-width:170px">
+          <label data-i18n="rpt_tx_type">Type</label>
+          <select id="rpt-tx-type" class="form-input">
+            <option value="" data-i18n="all_types">All Types</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label data-i18n="rpt_tx_from">From Date</label>
+          <input type="date" id="rpt-tx-from" class="form-input" style="width:140px">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label data-i18n="rpt_tx_to">To Date</label>
+          <input type="date" id="rpt-tx-to" class="form-input" style="width:140px">
+        </div>
+        <button class="btn btn-primary" onclick="rptLoadTx()" data-i18n="rpt_tx_load">🔄 Search</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="rptExportTx()" data-i18n="rpt_export">📥 Export Excel</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th data-i18n="mi_col_doc">Document No</th>
+              <th>Dir</th>
+              <th data-i18n="mi_col_type">Type</th>
+              <th data-i18n="mi_col_date">Date</th>
+              <th data-i18n="mo_col_from">From Project</th>
+              <th data-i18n="mo_col_to">To / Party</th>
+              <th style="text-align:right" data-i18n="lines">Lines</th>
+              <th style="text-align:right" data-i18n="mi_col_weight">Weight kg</th>
+              <th data-i18n="mi_col_status">Status</th>
+              <th data-i18n="actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rpt-tx-body">
+            <tr><td colspan="10" style="text-align:center;color:#9CA3AF;padding:2rem">Click "Search" to load transactions</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="rpt-tx-footer" style="margin-top:.5rem;color:#6B7280;font-size:.9rem"></div>
+    </div>
+  </div>
+</div>
+

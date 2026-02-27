@@ -1,0 +1,108 @@
+<div class="page-content active">
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h2 data-i18n="exp_title">⏰ Expiry Report</h2>
+        <p style="color:#6B7280" data-i18n="exp_subtitle">Items approaching or past expiry date, by project</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn" style="background:#DC2626;color:#fff" onclick="expRemoveFromStock()" data-i18n="exp_remove_btn">✂️ Remove from Stock</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="expExport()" data-i18n="exp_export">📥 Export Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="form-card" style="margin-bottom:1rem">
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="margin:0;min-width:180px">
+        <label data-i18n="exp_project">Project</label>
+        <select id="exp-project" class="form-input">
+          <option value="" data-i18n="all_projects">All Projects</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;min-width:200px">
+        <label data-i18n="exp_within_days">Expiring Within (days)</label>
+        <select id="exp-within-days" class="form-input">
+          <option value="30" data-i18n="exp_days_30">30 days</option>
+          <option value="60" data-i18n="exp_days_60">60 days</option>
+          <option value="90" selected data-i18n="exp_days_90">90 days</option>
+          <option value="180" data-i18n="exp_days_180">180 days</option>
+          <option value="365" data-i18n="exp_days_1y">1 year</option>
+          <option value="9999" data-i18n="exp_days_all">All expired + expiring</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="expLoad()" data-i18n="exp_generate">🔄 Generate Report</button>
+    </div>
+  </div>
+
+  <!-- Summary badges -->
+  <div id="exp-summary" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem"></div>
+
+  <!-- Results table -->
+  <div class="form-card">
+    <div id="exp-info" style="margin-bottom:.5rem;color:#6B7280;font-size:.9rem"></div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:36px">
+              <input type="checkbox" id="exp-select-all" onclick="expToggleAll(this)" title="Select all">
+            </th>
+            <th data-i18n="exp_col_project">Project</th>
+            <th data-i18n="exp_col_item">Item Code</th>
+            <th data-i18n="exp_col_desc">Description</th>
+            <th data-i18n="exp_col_batch">Batch</th>
+            <th data-i18n="exp_col_exp">Exp Date</th>
+            <th style="text-align:right" data-i18n="exp_col_days">Days Left</th>
+            <th style="text-align:right" data-i18n="exp_col_stock">Net Stock</th>
+            <th data-i18n="exp_col_status">Status</th>
+          </tr>
+        </thead>
+        <tbody id="exp-body">
+          <tr><td colspan="9" style="text-align:center;color:#9CA3AF;padding:2rem" data-i18n="exp_select_generate">Select filters and click Generate Report</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Write-Off Modal -->
+  <div id="exp-writeoff-modal" class="popup-overlay" style="display:none">
+    <div class="popup-content" style="max-width:480px">
+      <div class="popup-header">
+        <h3 class="popup-title" data-i18n="exp_remove_title">Remove Expiring Items from Stock</h3>
+        <button class="popup-close" onclick="expCloseWriteOffModal()">×</button>
+      </div>
+      <div style="padding:1.5rem">
+        <div id="exp-writeoff-summary" style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:6px;padding:.75rem;margin-bottom:1rem;font-size:.9rem;color:#78350F"></div>
+        <div class="form-group">
+          <label data-i18n="exp_out_type_label">OUT Type <span style="color:red">*</span></label>
+          <select id="exp-wo-type" class="form-input">
+            <option value="OEXP">OEXP — Expired Items</option>
+            <option value="ODMG">ODMG — Damaged Items</option>
+            <option value="OBRC">OBRC — Batch Recall</option>
+            <option value="OQRT">OQRT — Quarantine</option>
+            <option value="OLS">OLS — Other Losses</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="exp_project">Source Project <span style="color:red">*</span></label>
+          <select id="exp-wo-project" class="form-input"></select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="exp_remove_date">Date <span style="color:red">*</span></label>
+          <input type="date" id="exp-wo-date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label data-i18n="exp_remove_notes">Notes</label>
+          <input type="text" id="exp-wo-notes" class="form-input" placeholder="e.g. Expiry write-off batch XX">
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-danger" onclick="expConfirmWriteOff()" id="exp-wo-confirm-btn" data-i18n="exp_remove_confirm_btn">✅ Confirm Write-Off</button>
+        <button class="btn btn-secondary" onclick="expCloseWriteOffModal()" data-i18n="cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+

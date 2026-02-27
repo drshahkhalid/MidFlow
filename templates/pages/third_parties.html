@@ -1,0 +1,148 @@
+<div class="page-content active">
+    <div class="page-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2>🏢 <span data-i18n="third_parties_page_title">Third Parties</span></h2>
+                <p data-i18n="third_parties_page_subtitle">Manage third party organizations and contacts</p>
+            </div>
+            <button class="btn btn-success" onclick="openAddModal()">
+                ➕ <span data-i18n="add_third_party">Add Third Party</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Third Parties List -->
+    <div class="form-card">
+        <div style="margin-bottom: 1rem;">
+            <h3 data-i18n="third_parties_list">Third Parties List</h3>
+            <p style="color: #6B7280; font-size: 0.95rem;">
+                <span data-i18n="total_third_parties">Total Third Parties:</span>
+                <strong id="third-parties-count">0</strong>
+            </p>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th data-i18n="name">Name</th>
+                        <th data-i18n="type">Type</th>
+                        <th data-i18n="city">City</th>
+                        <th data-i18n="contact_person">Contact Person</th>
+                        <th data-i18n="email">Email</th>
+                        <th data-i18n="phone">Phone</th>
+                        <th style="width: 150px;" data-i18n="actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="third-parties-table-body">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 2rem; color: #9CA3AF;">
+                            <span data-i18n="loading_third_parties">Loading third parties...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="third-party-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 600px;">
+            <div class="popup-header">
+                <h3 class="popup-title" id="modal-title">Add Third Party</h3>
+                <button class="popup-close" onclick="closeModal()">×</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="form-group">
+                    <label for="third-party-name" data-i18n="name">Name</label>
+                    <input type="text" id="third-party-name" class="form-input" autocomplete="organization"
+                        placeholder="Organization name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="third-party-type" data-i18n="type">Type</label>
+                    <select id="third-party-type" class="form-input" autocomplete="off" required>
+                        ...
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="third-party-city" data-i18n="city">City</label>
+                    <input type="text" id="third-party-city" class="form-input" autocomplete="address-level2"
+                        placeholder="City">
+                </div>
+
+                <div class="form-group">
+                    <label for="third-party-address" data-i18n="address">Address</label>
+                    <textarea id="third-party-address" class="form-input" autocomplete="street-address" rows="2"
+                        placeholder="Full address"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="third-party-contact" data-i18n="contact_person">Contact Person</label>
+                    <input type="text" id="third-party-contact" class="form-input" autocomplete="name"
+                        placeholder="Contact person name">
+                </div>
+
+                <div class="form-group">
+                    <label for="third-party-email" data-i18n="email">Email</label>
+                    <input type="email" id="third-party-email" class="form-input" autocomplete="email"
+                        placeholder="email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="third-party-phone" data-i18n="phone">Phone</label>
+                    <input type="tel" id="third-party-phone" class="form-input" autocomplete="tel"
+                        placeholder="+123 456 7890">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="saveThirdParty()" id="save-btn">
+                    💾 <span data-i18n="save">Save</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 450px;">
+            <div class="popup-header">
+                <h3 class="popup-title">⚠️ <span data-i18n="confirm_delete">Confirm Delete</span></h3>
+                <button class="popup-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <p data-i18n="confirm_delete_third_party">Are you sure you want to delete this third party?</p>
+                <p style="color: #DC2626; font-weight: 600; margin-top: 0.5rem;" id="delete-third-party-name"></p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="confirmDelete()" id="confirm-delete-btn">
+                    🗑️ <span data-i18n="delete">Delete</span>
+                </button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden translations -->
+    <div style="display: none;">
+        <span data-i18n="no_third_parties_found" id="trans-no-third-parties">No third parties found</span>
+        <span data-i18n="click_add_first_third_party" id="trans-click-add">Click "Add Third Party" to create your first
+            third party</span>
+        <span data-i18n="saving" id="trans-saving">Saving...</span>
+        <span data-i18n="deleting" id="trans-deleting">Deleting...</span>
+        <span data-i18n="third_party_added_success" id="trans-added-success">Third party added successfully!</span>
+        <span data-i18n="third_party_updated_success" id="trans-updated-success">Third party updated
+            successfully!</span>
+        <span data-i18n="third_party_deleted_success" id="trans-deleted-success">Third party deleted
+            successfully!</span>
+        <span data-i18n="error_adding_third_party" id="trans-error-adding">Error adding third party</span>
+        <span data-i18n="error_updating_third_party" id="trans-error-updating">Error updating third party</span>
+        <span data-i18n="error_deleting_third_party" id="trans-error-deleting">Error deleting third party</span>
+        <span data-i18n="error_loading_third_parties" id="trans-error-loading">Error loading third parties</span>
+        <span data-i18n="name_required" id="trans-name-required">Name is required</span>
+        <span data-i18n="type_required" id="trans-type-required">Type is required</span>
+    </div>
+</div>

@@ -72,20 +72,20 @@
                 <input type="hidden" id="user-id">
 
                 <div class="form-group">
-                    <label>
+                    <label for="username">
                         <span data-i18n="username">Username</span>
                         <span style="color: red;">*</span>
                     </label>
-                    <input type="text" id="username" required maxlength="50"
+                    <input type="text" id="username" required maxlength="50" autocomplete="username"
                         data-i18n-placeholder="username_placeholder">
                 </div>
 
                 <div class="form-group">
-                    <label>
+                    <label for="user-role">
                         <span data-i18n="role">Role</span>
                         <span style="color: red;">*</span>
                     </label>
-                    <select id="user-role" required>
+                    <select id="user-role" required autocomplete="off">
                         <option value="" data-i18n="select_role">-- Select Role --</option>
                         <option value="HQ" data-i18n="role_hq">HQ (Administrator)</option>
                         <option value="Coordinator" data-i18n="role_coordinator">Coordinator</option>
@@ -95,10 +95,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label>
+                    <label for="user-language">
                         <span data-i18n="language">Language</span>
                     </label>
-                    <select id="user-language">
+                    <select id="user-language" autocomplete="language">
                         <option value="en">🇬🇧 English</option>
                         <option value="fr">🇫🇷 Français</option>
                         <option value="es">🇪🇸 Español</option>
@@ -106,11 +106,11 @@
                 </div>
 
                 <div class="form-group" id="password-group">
-                    <label>
+                    <label for="user-password">
                         <span data-i18n="password">Password</span>
                         <span style="color: red;" id="password-required">*</span>
                     </label>
-                    <input type="password" id="user-password" minlength="6" maxlength="100"
+                    <input type="password" id="user-password" minlength="6" maxlength="100" autocomplete="new-password"
                         data-i18n-placeholder="password_placeholder">
                     <small style="color: #6B7280;" id="password-hint" data-i18n="password_hint">
                         Minimum 6 characters. Leave blank to keep existing password.
@@ -118,12 +118,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label>
+                    <label for="confirm-password">
                         <span data-i18n="confirm_password">Confirm Password</span>
                         <span style="color: red;" id="confirm-password-required">*</span>
                     </label>
                     <input type="password" id="confirm-password" minlength="6" maxlength="100"
-                        data-i18n-placeholder="confirm_password_placeholder">
+                        autocomplete="new-password" data-i18n-placeholder="confirm_password_placeholder">
                 </div>
 
                 <div class="btn-group">

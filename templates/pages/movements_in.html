@@ -1,0 +1,132 @@
+<div class="page-content active">
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h2 data-i18n="mi_title">📥 IN Movements</h2>
+        <p style="color:#6B7280" data-i18n="mi_subtitle">Record items entering stock from third parties / end users</p>
+      </div>
+      <button class="btn btn-success" onclick="miNewDraft()" data-i18n="mi_new_btn">➕ New IN Movement</button>
+    </div>
+  </div>
+
+  <!-- ── Draft Editor ─────────────────────────────────────────── -->
+  <div id="mi-editor" class="form-card" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 id="mi-editor-title">New IN Movement</h3>
+      <button class="btn" style="background:#6B7280;color:#fff" onclick="miCancelDraft()">✕ <span data-i18n="cancel">Cancel</span></button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem">
+      <div class="form-group">
+        <label><span data-i18n="mi_in_type">IN Type</span> <span style="color:red">*</span></label>
+        <select id="mi-doc-type" class="form-input" onchange="miOnTypeChange()">
+          <option value="">— select type —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label><span data-i18n="mi_date">Date</span> <span style="color:red">*</span></label>
+        <input type="date" id="mi-date" class="form-input">
+      </div>
+      <div class="form-group">
+        <label><span data-i18n="mi_dest_project">Destination Project</span> <span style="color:red">*</span></label>
+        <select id="mi-dest-project" class="form-input">
+          <option value="">— select project —</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Party section (shown/hidden per type) -->
+    <div id="mi-party-section" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem">
+      <div id="mi-tp-wrap" class="form-group" style="display:none">
+        <label><span data-i18n="mi_third_party">Third Party</span> <span style="color:red">*</span></label>
+        <select id="mi-third-party" class="form-input">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <div id="mi-eu-wrap" class="form-group" style="display:none">
+        <label><span data-i18n="mi_end_user">End User</span> <span style="color:red">*</span></label>
+        <select id="mi-end-user" class="form-input">
+          <option value="">— select —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label data-i18n="mi_notes">Notes</label>
+        <input type="text" id="mi-notes" class="form-input" placeholder="Optional notes">
+      </div>
+    </div>
+
+    <!-- Lines table -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <strong data-i18n="mi_item_lines">Item Lines</strong>
+      <button class="btn btn-primary" style="padding:.3rem .8rem;font-size:.85rem" onclick="miAddLine()" data-i18n="mi_add_line">+ Add Line</button>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:1rem">
+      <table class="data-table" id="mi-lines-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th data-i18n="rpt_ss_col_item">Item Code</th>
+            <th data-i18n="rpt_ss_col_desc">Description</th>
+            <th data-i18n="quantity">Qty</th>
+            <th>Unit</th>
+            <th>Batch No</th>
+            <th data-i18n="exp_col_exp">Exp Date</th>
+            <th>Weight kg</th>
+            <th>Volume m³</th>
+            <th>Unit Price</th>
+            <th>Currency</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="mi-lines-body">
+          <tr id="mi-empty-row"><td colspan="12" style="text-align:center;color:#9CA3AF;padding:1rem">No lines yet — click "+ Add Line"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn" style="background:#6B7280;color:#fff" onclick="miSaveDraft()" data-i18n="mi_save_draft">💾 Save Draft</button>
+      <button class="btn" style="background:#16a34a;color:#fff" onclick="miExportCurrent()">📥 Download PL</button>
+      <button class="btn btn-success" onclick="miConfirmDraft()" data-i18n="mi_confirm_btn">✅ Confirm Movement</button>
+    </div>
+    <input type="hidden" id="mi-editing-id" value="">
+  </div>
+
+  <!-- ── Movements List ───────────────────────────────────────── -->
+  <div class="form-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <h3 data-i18n="mi_history">IN Movements History</h3>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <select id="mi-filter-status" class="form-input" style="width:130px" onchange="miLoadList()">
+          <option value="">All Status</option>
+          <option value="Draft">Draft</option>
+          <option value="Confirmed">Confirmed</option>
+        </select>
+        <select id="mi-filter-type" class="form-input" style="width:160px" onchange="miLoadList()">
+          <option value="">All Types</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="mi_col_doc">Document No</th>
+            <th data-i18n="mi_col_type">Type</th>
+            <th data-i18n="mi_col_date">Date</th>
+            <th data-i18n="mi_col_project">To Project</th>
+            <th data-i18n="mi_col_party">Third Party / End User</th>
+            <th data-i18n="mi_col_lines">Lines</th>
+            <th data-i18n="mi_col_weight">Weight kg</th>
+            <th data-i18n="mi_col_status">Status</th>
+            <th data-i18n="actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="mi-list-body">
+          <tr><td colspan="9" style="text-align:center;color:#9CA3AF;padding:2rem">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

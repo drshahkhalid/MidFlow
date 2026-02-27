@@ -1,0 +1,85 @@
+<div class="page-content active">
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h2>📋 Reception Report</h2>
+        <p style="color:#6B7280">Review and share cargo reception history with supply teams</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn" style="background:#1F3A8A;color:#fff" onclick="rrExport()">📥 Export Excel</button>
+        <button class="btn" style="background:#16a34a;color:#fff" onclick="rrShare()">📧 Share</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="form-card" style="margin-bottom:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:flex-end">
+      <div class="form-group" style="margin:0">
+        <label>Project</label>
+        <select id="rr-project" class="form-input">
+          <option value="">All Projects</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Order Type</label>
+        <select id="rr-order-type" class="form-input">
+          <option value="">All Types</option>
+          <option value="International">International</option>
+          <option value="Local">Local</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Reception No</label>
+        <input type="text" id="rr-rec-no" class="form-input" placeholder="Search...">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Cargo Session</label>
+        <input type="text" id="rr-cargo" class="form-input" placeholder="Session ID...">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Date From</label>
+        <input type="date" id="rr-date-from" class="form-input">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Date To</label>
+        <input type="date" id="rr-date-to" class="form-input">
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-primary" onclick="rrLoad()" style="flex:1">🔄 Load</button>
+        <button class="btn" style="background:#6B7280;color:#fff" onclick="rrClear()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div id="rr-summary" style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem"></div>
+  <div id="rr-info" style="margin-bottom:.5rem;color:#6B7280;font-size:.9rem"></div>
+
+  <!-- Table -->
+  <div class="form-card">
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Parcel No</th>
+            <th>Field Ref</th>
+            <th>Project</th>
+            <th>Type</th>
+            <th>Pallet</th>
+            <th style="text-align:right">Items</th>
+            <th style="text-align:right">Weight kg</th>
+            <th>Reception No</th>
+            <th>Received At</th>
+            <th>By</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="rr-body">
+          <tr><td colspan="12" style="text-align:center;color:#9CA3AF;padding:2rem">Apply filters and click Load</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
